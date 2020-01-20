@@ -1,6 +1,6 @@
-5fbee11b4da47c3cc56470a4c7582c2f *DESCRIPTION
+78083d1d5f68d0c378fd8da9fcc27bf5 *DESCRIPTION
 ade294284a7a69fdc3eb6c1facc32411 *NAMESPACE
-f9ecc7f14673aa7364d3b3bc37beeb10 *NEWS.md
+f971e736d73d4ac714bcc299b68af53a *NEWS.md
 8a113081688e5428e5787b8fa1cde700 *R/EMMA.R
 17dbb07604ccd3451f6c9c55d2424207 *R/GWASHelp.R
 8d225fb0fa33feb18707e96bfba2370e *R/RcppExports.R
@@ -30,7 +30,7 @@ b272aa32364573adf05a8f412105e310 *data/datalist
 c17bdc97cc678428e7da689aa912a26a *data/dropsPheno.rda
 201766383e7dd3cfe8b667642a99f4f5 *inst/doc/GWAS.R
 fe4804f44a0cb25b265021550322a9ad *inst/doc/GWAS.Rmd
-069d725558ae50f17fb6c925753d9e2c *inst/doc/GWAS.html
+1bd531d14bc3e60626567ecae24476b3 *inst/doc/GWAS.html
 9eb5f003b27c7cd79f717bd30b7db5ea *inst/extdata/testData.RData
 ea98b902fe469c5a6b6e1a28fb08e3d6 *inst/java/beagle.jar
 32c157f8b3aba2d3d1419d3d295a4fbd *inst/tinytest/test_GWAS.R
@@ -54,7 +54,7 @@ bf5fcf8e44854d61b3cb8965b0a7ea72 *man/runSingleTraitGwas.Rd
 c2aa481dca43e4565c98cd5b65c5e9b5 *man/statgenGWAS-package.Rd
 3f5aa95a2de2f9a21a5fb0aff36a2a46 *man/summary.GWAS.Rd
 5cd203372a3b7e10855d9d893d9affe8 *man/summary.gData.Rd
-d0bd49702495d63f04f7efcdf3508765 *src/EMMA.cpp
+9984a9660f1bfdbb1437242cca94781d *src/EMMA.cpp
 9a5a72195d039bd8de376f2dfd780e23 *src/Makevars.in
 61059660eb073d93e00e8ee054237071 *src/Makevars.win
 7151929a95d62fcb8ad25566721f1ca7 *src/RcppExports.cpp

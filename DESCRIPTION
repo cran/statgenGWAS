@@ -1,8 +1,8 @@
 Package: statgenGWAS
 Type: Package
 Title: Genome Wide Association Studies
-Version: 1.0.1
-Date: 2020-01-14
+Version: 1.0.2
+Date: 2020-01-20
 Authors@R: c(person(given = "Bart-Jan", 
                     family = "van Rossum", 
                     email = "bart-jan.vanrossum@wur.nl", 
@@ -60,7 +60,7 @@ Suggests: knitr, rmarkdown, officer, rvg, tinytest
 VignetteBuilder: knitr
 LinkingTo: Rcpp, RcppArmadillo
 NeedsCompilation: yes
-Packaged: 2020-01-14 10:53:44 UTC; rossu027
+Packaged: 2020-01-20 14:23:46 UTC; rossu027
 Author: Bart-Jan van Rossum [aut, cre],
   Willem Kruijer [aut] (<https://orcid.org/0000-0001-7179-1733>),
   Fred van Eeuwijk [ctb] (<https://orcid.org/0000-0003-3672-2921>),
@@ -74,4 +74,4 @@ Author: Bart-Jan van Rossum [aut, cre],
   Choazhi Zheng [ctb] (<https://orcid.org/0000-0001-6030-3933>)
 Maintainer: Bart-Jan van Rossum <bart-jan.vanrossum@wur.nl>
 Repository: CRAN
-Date/Publication: 2020-01-19 15:30:02 UTC
+Date/Publication: 2020-01-20 17:00:02 UTC
