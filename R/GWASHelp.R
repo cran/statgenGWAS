@@ -211,12 +211,85 @@ extrSignSnps <- function(GWAResult,
     ## maxScore. It is therefore scaled to marker scores 0, 1 (or 0, 0.5,
     ## 1 if there are heterozygotes).
     snpVar <- 4 * GWAResult[snpSelection, "effect"] ^ 2 / maxScore ^ 2 *
+      apply(X = markers[, GWAResult[snpSelection][["snp"]], drop = FALSE], 
+            MARGIN = 2, FUN = var)
+    propSnpVar <- snpVar[["effect"]] / as.numeric(var(pheno[trait]))
+    ## Create data.table with significant snps.
+    signSnp <- data.table::data.table(GWAResult[snpSelection, ],
+                                      snpStatus = as.factor(snpStatus),
+                                      propSnpVar = propSnpVar)
+    ## Sort columns.
+    data.table::setkeyv(x = signSnp, cols = c("trait", "chr", "pos"))
+  } else {
+    ## No significant SNPs. Return empty data.table.
+    signSnp <- data.table::data.table()
+  }
+  return(signSnp)
+}
+
+#' @noRd
+#' @keywords internal
+extrSignSnpsFDR <- function(GWAResult, 
+                            markers,
+                            maxScore,
+                            pheno,
+                            trait,
+                            rho = 0.3,
+                            pThr = 0.05,
+                            alpha = 0.05) {
+  ## Get named vector of p Values.
+  pVals <- setNames(GWAResult$pValue, GWAResult$snp)
+  ## Subset p Values base on threshold.
+  B <- pVals[pVals < pThr]
+  ## Subset markers based on selected p Values.
+  BMarkers <- markers[, colnames(markers) %in% names(B), drop = FALSE]
+  ## Compute selection threshold.
+  selThr <- alpha / length(pVals)
+  ## Initialize values.
+  BpVals <- numeric()
+  snpSelection <- character()
+  continue <- TRUE
+  nClust <- 0
+  while (length(B) > 0 && continue) {
+    ## Next cluster is represented by remaining SNP with lowest p Value.
+    clusterRep <- which.min(B) 
+    ## Only continue if next p Value satisfies criterion.
+    ## After the first failure all following clusters are irrelevant.
+    if (B[clusterRep] < (nClust + 1) * selThr) {
+      ## Add p Value for representing SNP to output.
+      BpVals <- c(BpVals, B[clusterRep])
+      ## Find all remaining SNPs within LD of at least rho of representing SNP.
+      LD <- cor(BMarkers[, names(clusterRep)], BMarkers)
+      LDSet <- names(LD[, LD > rho])
+      ## Remove selected SNPs from B and from markers.
+      B <- B[!names(B) %in% LDSet]
+      BMarkers <- BMarkers[, !colnames(BMarkers) %in% LDSet, drop = FALSE]
+      ## Add LD set to selected SNPs.
+      ## Using union assures representing SNP will be the first in the list.
+      snpSelection <- c(snpSelection, union(names(snpSelection), LDSet))
+      nClust <- nClust + 1
+    } else {
+      continue <- FALSE
+    }
+  }
+  if (nClust > 0) {
+    ## Create a vector of SNP statuses, differentiating between representing
+    ## SNPs and everything else.
+    snpStatus <- ifelse(snpSelection %in% names(BpVals), "significant SNP",
+                        "within LD of significant SNP")
+    ## Compute variance of marker scores, based on genotypes for which
+    ## phenotypic data is available. For inbreeders, this depends on
+    ## maxScore. It is therefore scaled to marker scores 0, 1 (or 0, 0.5,
+    ## 1 if there are heterozygotes).
+    snpVar <- 4 * GWAResult[snpSelection, "effect"] ^ 2 / maxScore ^ 2 *
       apply(X = markers[, snpSelection, drop = FALSE], MARGIN = 2, FUN = var)
     propSnpVar <- snpVar[["effect"]] / as.numeric(var(pheno[trait]))
     ## Create data.table with significant snps.
     signSnp <- data.table::data.table(GWAResult[snpSelection, ],
                                       snpStatus = as.factor(snpStatus),
                                       propSnpVar = propSnpVar)
+    ## Sort columns.
+    data.table::setkeyv(x = signSnp, cols = c("trait", "chr", "pos"))
   } else {
     ## No significant SNPs. Return empty data.table.
     signSnp <- data.table::data.table()
@@ -259,7 +332,7 @@ getSNPsInRegionSufLD <- function(snp,
     R2 <- suppressWarnings(cor(markers[, snp, drop = FALSE],
                                markers[, candidateSnps, drop = FALSE]) ^ 2)
     ## Select SNPs based on R2.
-    candidateSnpsNames <- colnames(R2[, R2[, 1] > minR2, drop = FALSE])
+    candidateSnpsNames <- colnames(R2[, R2 > minR2, drop = FALSE])
     return(which(rownames(map) %in% candidateSnpsNames))
   } else {
     return(integer())

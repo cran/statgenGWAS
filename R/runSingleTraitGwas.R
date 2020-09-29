@@ -6,9 +6,38 @@
 #' al., 2008) or the Newton-Raphson algorithm (Tunnicliffe, 1989) in the
 #' \code{sommer} package. Then a Generalized Least Squares (GLS) method is used
 #' for estimating the marker effects and corresponding p-values. This is done
-#' using either one kinship matrix for all chromosomes or different chromosome-specific
-#' kinship matrices for each chromosome. Significant SNPs are selected
-#' based on a user defined threshold.
+#' using either one kinship matrix for all chromosomes or different 
+#' chromosome-specific kinship matrices for each chromosome. Significant SNPs 
+#' are selected based on a user defined threshold.
+#' 
+#' @section Threshold types for the selection of candidate loci:
+#' For the selection of candidate loci from the GWAS output four different 
+#' methods can be used. The method used can be specified in the function 
+#' parameter \code{thrType}. Further parameters can be used to fine tune the 
+#' method.
+#' \describe{
+#' \item{bonf}{The Bonferroni threshold, a LOD-threshold of 
+#' \eqn{-log10(alpha / m)}, where m is the number of SNPs and alpha can be 
+#' specified by the function parameter \code{alpha}}
+#' \item{fixed}{A fixed LOD-threshold, specified by the function parameter
+#' \code{LODThr}}
+#' \item{small}{The n SNPs with with the smallest p-Values are selected. n can
+#' be specified in \code{nSnpLOD}
+#' }
+#' \item{fdr}{Following the algorithm proposed by Brzyski D. et al. (2017), 
+#' SNPs are selected in such a way that the False Discovery Rate (fdr) is 
+#' minimized. To do this, first the SNPs are restricted to the SNPs with a 
+#' p-Value below \code{pThr}. Then clusters of SNPs are created using a 
+#' two step iterative process in which first the SNP with the lowest p-Value is 
+#' selected as cluster representative. This SNP and all SNPs that have a 
+#' correlation with this SNP of \code{pho} or higher will form a cluster. 
+#' The selected SNPs are removed from the list and the procedure repeated until 
+#' no SNPs are left. Finally to determine the number of significant clusters 
+#' the first cluster is determined for which the p-Value of the cluster 
+#' representative is not smaller than \eqn{cluster_{number} * alpha / m} where 
+#' m is the number of SNPs and alpha can be specified by the function parameter 
+#' \code{alpha}. All previous clusters are selected as significant.}
+#' }
 #'
 #' @param gData An object of class \code{gData} containing at least \code{map},
 #' \code{markers} and \code{pheno}.
@@ -58,19 +87,18 @@
 #' @param genomicControl Should genomic control correction as in Devlin and
 #' Roeder (1999) be applied?
 #' @param thrType A character string indicating the type of threshold used for
-#' the selection of candidate loci. Either \code{bonf} for using the
-#' Bonferroni threshold, a LOD-threshold of \eqn{-log10(alpha/p)}, where p is
-#' the number of markers and alpha can be specified in \code{alpha},
-#' \code{fixed} for a self-chosen fixed LOD-threshold, specified in \code{LODThr}
-#' or \code{small}, the LOD-threshold is chosen such as the SNPs with the
-#' \code{nSnpLOD} smallest p-values are selected. \code{nSnpLOD} can be
-#' specified.
+#' the selection of candidate loci. See Details.
 #' @param alpha A numerical value used for calculating the LOD-threshold for
-#' \code{thrType} = "bonf".
+#' \code{thrType} = "bonf" and the significant p-Values for \code{thrType} = 
+#' "fdr".
 #' @param LODThr A numerical value used as a LOD-threshold when
 #' \code{thrType} = "fixed".
 #' @param nSnpLOD A numerical value indicating the number of SNPs with the
 #' smallest p-values that are selected when \code{thrType} = "small".
+#' @param rho A numerical value used a the minimum value for SNPs to be 
+#' considered correlated when using \code{thrType} = "fdr".
+#' @param pThr A numerical value just as the cut off value for p-Values for 
+#' \code{thrType} = "fdr".
 #' @param sizeInclRegion An integer. Should the results for SNPs close to
 #' significant SNPs be included? If so, the size of the region in centimorgan
 #' or base pairs. Otherwise 0.
@@ -91,6 +119,9 @@
 #' @references Astle, William, and David J. Balding. 2009. Population Structure
 #' and Cryptic Relatedness in Genetic Association Studies. Statistical Science 
 #' 24 (4): 451–71. \url{https://doi.org/10.1214/09-sts307}.
+#' @references Brzyski D. et al. (2017) Controlling the Rate of GWAS False 
+#' Discoveries. Genetics 205 (1): 61-75.
+#' \url{https://doi.org/10.1534/genetics.116.193987}
 #' @references Devlin, B., and Kathryn Roeder. 1999. Genomic Control for 
 #' Association Studies. Biometrics 55 (4): 997–1004. 
 #' \url{https://doi.org/10.1111/j.0006-341x.1999.00997.x}.
@@ -143,11 +174,11 @@
 #'                           pheno = dropsPhenoList)
 #'                           
 #' ## Run single trait GWAS for trait 'grain.yield' for trial Mur13W.
-#'  \donttest{
+#' \donttest{
 #' GWASDrops <- runSingleTraitGwas(gData = gDataDrops,
 #'                                trials = "Mur13W",
 #'                                traits = "grain.yield")
-#'  }
+#' }
 #'                                
 #' ## Run single trait GWAS for trait 'grain.yield' for trial Mur13W.
 #' ## Use chromosome specific kinship matrices calculated using vanRaden method.
@@ -159,7 +190,7 @@
 #'                                     GLSMethod = "multi")  
 #' }
 #'
-#' @seealso \code{\link{GWAS}}, \code{\link{kinship}}, \code{\link{dropsData}}
+#' @seealso \code{\link{summary.GWAS}}, \code{\link{plot.GWAS}}
 #'
 #' @importFrom data.table :=
 #' @import data.table
@@ -179,10 +210,12 @@ runSingleTraitGwas <- function(gData,
                                MAF = 0.01,
                                MAC = 10,
                                genomicControl = FALSE,
-                               thrType = c("bonf", "fixed", "small"),
-                               alpha = 0.05 ,
+                               thrType = c("bonf", "fixed", "small", "fdr"),
+                               alpha = 0.05,
                                LODThr = 4,
                                nSnpLOD = 10,
+                               pThr = 0.05,
+                               rho = 0.5,
                                sizeInclRegion = 0,
                                minR2 = 0.5,
                                nCores = NULL) {
@@ -223,6 +256,10 @@ runSingleTraitGwas <- function(gData,
     chkNum(LODThr, min = 0)
   } else if (thrType == "small") {
     chkNum(nSnpLOD, min = 0)
+  } else if (thrType == "fdr") {
+    chkNum(alpha, min = 0)
+    chkNum(rho, min = 0, max = 1)
+    chkNum(pThr, min = 0, max = 1)
   }
   ## Compute kinship matrix (GSLMethod single)
   ## or kinship matrices per chromosome (GLSMethod multi).
@@ -303,7 +340,7 @@ runSingleTraitGwas <- function(gData,
                                           key = "snp")
       if (GLSMethod == "single") {
         ## Determine segregating markers. Exclude snps used as covariates.
-        segMarkers <- which(allFreq >= MAF & allFreq <= (1 - MAF))
+        segMarkers <- which(abs(allFreq) < 1 -  MAF)
         ## Exclude snpCovariates from segregating markers.
         exclude <- exclMarkers(snpCov = snpCov, markers = markersRed,
                                allFreq = allFreq)
@@ -339,7 +376,7 @@ runSingleTraitGwas <- function(gData,
                                         rownames(mapRedChr), drop = FALSE]
           allFreqChr <- colMeans(markersRedChr, na.rm = TRUE) / maxScore
           ## Determine segregating markers. Exclude snps used as covariates.
-          segMarkersChr <- which(allFreqChr >= MAF & allFreqChr <= (1 - MAF))
+          segMarkersChr <- which(abs(allFreqChr) < 1 -  MAF)
           ## Exclude snpCovariates from segregating markers.
           exclude <- exclMarkers(snpCov = snpCov, markers = markersRedChr,
                                  allFreq = allFreqChr)
@@ -374,8 +411,9 @@ runSingleTraitGwas <- function(gData,
         }
       }
       ## Effects should be for a single allele, not for 2
-      if (maxScore == 1) {
+      if (diff(range(markersRed)) == 1) {
         GWAResult[, "effect" := GWAResult[["effect"]] / 2]
+        GWAResult[, "effectSe" := GWAResult[["effectSe"]] / 2]
       }
       ## Calculate the genomic inflation factor.
       GC <- genCtrlPVals(pVals = GWAResult[["pValue"]], nObs = length(nonMiss),
@@ -395,14 +433,23 @@ runSingleTraitGwas <- function(gData,
         ## Compute LOD threshold by computing the 10log of the nSnpLOD item
         ## of ordered p values.
         LODThr <- sort(na.omit(GWAResult[["LOD"]]), decreasing = TRUE)[nSnpLOD]
+      } else if (thrType == "fdr") {
+        LODThr <- NA
       }
       LODThrTr[trait] <- LODThr
       ## Select the SNPs whose LOD-scores are above the threshold.
-      signSnpTotTr[[trait]] <-
-        extrSignSnps(GWAResult = GWAResult, LODThr = LODThr,
-                     sizeInclRegion = sizeInclRegion, minR2 = minR2,
-                     map = mapRed, markers = markersRed,
-                     maxScore = maxScore, pheno = phTrTr, trait = trait)
+      if (thrType == "fdr") {
+        signSnpTotTr[[trait]] <-
+          extrSignSnpsFDR(GWAResult = GWAResult, markers = markersRed,
+                          maxScore = maxScore, pheno = phTrTr, trait = trait,
+                          rho = rho, pThr = pThr, alpha = alpha)
+      } else {
+        signSnpTotTr[[trait]] <-
+          extrSignSnps(GWAResult = GWAResult, LODThr = LODThr,
+                       sizeInclRegion = sizeInclRegion, minR2 = minR2,
+                       map = mapRed, markers = markersRed,
+                       maxScore = maxScore, pheno = phTrTr, trait = trait)
+      }
       ## Sort columns.
       data.table::setkeyv(x = GWAResult, cols = c("trait", "chr", "pos"))
       GWATotTr[[trait]] <- GWAResult

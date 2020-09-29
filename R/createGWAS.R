@@ -54,11 +54,14 @@ createGWAS <- function(GWAResult = NULL,
 #' @param trials A vector of strings or numeric indices indicating for
 #' which trials the summary should be made. If \code{NULL}, a summary is
 #' made for all trials.
+#' @param traits A vector of strings indicating which traits to include in the
+#' summary. If \code{NULL}, all traits are included in the summary.
 #'
 #' @export
 summary.GWAS <- function(object, 
                          ..., 
-                         trials = NULL) {
+                         trials = NULL,
+                         traits = NULL) {
   ## Checks.
   if (!is.null(trials) && !is.character(trials) &&
       !is.numeric(trials)) {
@@ -82,11 +85,20 @@ summary.GWAS <- function(object,
     GWAResult <- object$GWAResult[[trial]]
     signSnp <- object$signSnp[[trial]]
     GWASInfo <- object$GWASInfo
-    traits <- unique(GWAResult$trait)
+    if (is.null(traits)) {
+      traitsTr <- unique(GWAResult$trait)
+    } else {
+      if (!all(traits %in% GWAResult$trait)) {
+        stop("All traits should be present in ", deparse(substitute(object)))
+      } else {
+        traitsTr <- traits 
+      }
+    }
     ## Print trial.
     cat(names(object$GWAResult)[trial], ":\n", sep = "")
     ## Print traits.
-    cat("\tTraits analysed:", paste(traits, collapse = ", "), "\n\n")
+    cat("\tTraits analysed:", paste(unique(GWAResult$trait), 
+                                    collapse = ", "), "\n\n")
     ## Print SNP numbers.
     cat("\tData are available for", length(unique(GWAResult$snp)),
         "SNPs.\n")
@@ -95,7 +107,7 @@ summary.GWAS <- function(object,
           "of them were not analyzed because their minor allele frequency is",
           "below", GWASInfo$MAF, "\n\n")
     }
-    for (trait in traits) {
+    for (trait in traitsTr) {
       cat("\tTrait:", trait, "\n\n")
       if (substr(GWASInfo$call[[1]], 4, 4) == "S" &&
           !is.null(GWASInfo$GLSMethod) && GWASInfo$GLSMethod == "single") {
@@ -151,13 +163,13 @@ summary.GWAS <- function(object,
 #' plot can be made:
 #' \itemize{
 #' \item{a manhattan plot, i.e. a plot of LOD-scores per SNP}
-#' \item{a qq plot of observed LOD-scores versus expected LOD-scores}
+#' \item{a QQ plot of observed LOD-scores versus expected LOD-scores}
 #' \item{a qtl plot of effect sizes and directions for multiple traits}
 #' }
-#' Manhattan plots and qq plots are made for a single trait which
+#' Manhattan plots and QQ plots are made for a single trait which
 #' should be indicated using the parameter \code{trait}. If the analysis was
-#' done for only one trait it is detected automatically. The qtl plot will plot
-#' all traits analysed.\cr
+#' done for only one trait, it is detected automatically. The qtl plot will plot
+#' all traits analyzed.\cr
 #' See details for a detailed description of the plots and the plot options
 #' specific to the different plots.
 #'
@@ -166,7 +178,7 @@ summary.GWAS <- function(object,
 #' plotted. Significant markers are highlighted with red dots. By default these
 #' are taken from the result of the GWAS analysis however the LOD-threshold for
 #' significant parameters may be modified using the parameter \code{yThr}. The
-#' treshold is plotted as a horizontal line. If there are previously known
+#' threshold is plotted as a horizontal line. If there are previously known
 #' marker effect, false positives and true negatives can also be marked.\cr
 #' Extra parameter options:
 #' \describe{
@@ -185,7 +197,7 @@ summary.GWAS <- function(object,
 #' \item{\code{signLwd}}{A numerical value giving the thickness of the
 #' points that are false/true positives/negatives. Default = 0.6}
 #' \item{\code{lod}}{A positive numerical value. For the SNPs with a LOD-value
-#' below this value, only 5\% is plotted. The chance of a SNP being plotting is
+#' below this value, only 5\% is plotted. The chance of a SNP being plotted is
 #' proportional to its LOD-score. This option can be useful when plotting a
 #' large number of SNPs. The 5\% of SNPs plotted is selected randomly. For 
 #' reproducible results use set.seed before calling the function.}
@@ -194,9 +206,9 @@ summary.GWAS <- function(object,
 #' subset of chromosomes.}
 #' }
 #'
-#' @section QQ Plot:
-#' From the LOD-scores calculated in the GWAS analysis, a qq-plot is generated with
-#' observed LOD-scores versus expected LOD-scores. Code is adapted from
+#' @section QQ-Plot:
+#' From the LOD-scores calculated in the GWAS analysis, a QQ-plot is generated 
+#' with observed LOD-scores versus expected LOD-scores. Code is adapted from
 #' Segura et al. (2012).
 #'
 #' @section QTL Plot:
@@ -373,18 +385,26 @@ plot.GWAS <- function(x,
                                                      "effects"))]
             ))
   } else if (plotType == "qq") {
-    ## Create qq-plot.
+    ## Create QQ-plot.
     qqPlot(pValues = na.omit(GWAResult$pValue), ..., output = output)
   } else if (plotType == "qtl") {
     if (!is.null(dotArgs$yThr)) {
+      ## Threshold modified, update significant SNPs.
       chkNum(dotArgs$yThr, min = 0)
       yThr <- dotArgs$yThr
+      GWAResult[["sign"]] <- !is.na(GWAResult$LOD) & GWAResult$LOD > yThr
     } else {
-      ## Get yThr from GWAS object.
-      yThr <- x$thr[[trial]][[1]]
+      ## Get significant SNPs from signSnp.
+      ## Ignore SNPs that are not significant themselves both close to 
+      ## significant SNPs.
+      signSnps <- signSnp[signSnp[["snpStatus"]] == "significant SNP", 
+                          c("trait", "snp")]
+      signSnps <- interaction(signSnps)
+      GWAResult[["sign"]] <- 
+        interaction(GWAResult[, c("trait", "snp")]) %in% signSnps
     }
-    GWAResult$sign <- !is.na(GWAResult$LOD) & GWAResult$LOD > yThr
-    if (!sum(GWAResult$sign)) {
+    ## At least one significant SNP needed to create a plot.
+    if (!sum(GWAResult[["sign"]])) {
       stop("No significant SNPs found. No plot can be made.\n")
     }
     map <- GWAResult[!is.na(GWAResult$pos), c("chr", "pos")]

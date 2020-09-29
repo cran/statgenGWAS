@@ -1,8 +1,8 @@
 Package: statgenGWAS
 Type: Package
 Title: Genome Wide Association Studies
-Version: 1.0.4
-Date: 2020-03-02
+Version: 1.0.5
+Date: 2020-09-29
 Authors@R: c(person(given = "Bart-Jan", 
                     family = "van Rossum", 
                     email = "bart-jan.vanrossum@wur.nl", 
@@ -54,16 +54,17 @@ Description: Fast single trait Genome Wide Association Studies (GWAS) following
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.0.2
+RoxygenNote: 7.1.1
 Depends: R (>= 3.5)
 Imports: data.table, ggplot2 (>= 3.0.0), sommer (>= 3.7.3), Rcpp
 Suggests: knitr, rmarkdown, officer, tinytest
 VignetteBuilder: knitr
 LinkingTo: Rcpp, RcppArmadillo
-URL: https://github.com/Biometris/statgenGWAS/
+URL: https://biometris.github.io/statgenGWAS/index.html,
+        https://github.com/Biometris/statgenGWAS/
 BugReports: https://github.com/Biometris/statgenGWAS/issues
 NeedsCompilation: yes
-Packaged: 2020-03-02 07:44:18 UTC; rossu027
+Packaged: 2020-09-29 08:26:50 UTC; rossu027
 Author: Bart-Jan van Rossum [aut, cre],
   Willem Kruijer [aut] (<https://orcid.org/0000-0001-7179-1733>),
   Fred van Eeuwijk [ctb] (<https://orcid.org/0000-0003-3672-2921>),
@@ -77,4 +78,4 @@ Author: Bart-Jan van Rossum [aut, cre],
   Choazhi Zheng [ctb] (<https://orcid.org/0000-0001-6030-3933>)
 Maintainer: Bart-Jan van Rossum <bart-jan.vanrossum@wur.nl>
 Repository: CRAN
-Date/Publication: 2020-03-02 08:10:03 UTC
+Date/Publication: 2020-09-29 09:50:02 UTC
