@@ -30,11 +30,13 @@
 #' p-Value below \code{pThr}. Then clusters of SNPs are created using a 
 #' two step iterative process in which first the SNP with the lowest p-Value is 
 #' selected as cluster representative. This SNP and all SNPs that have a 
-#' correlation with this SNP of \code{pho} or higher will form a cluster. 
+#' correlation with this SNP of \eqn{\rho} or higher will form a cluster. 
+#' \eqn{\rho} can be specified as an argument in the function and has a default
+#' value of 0.5, which is a recommended starting value in practice.
 #' The selected SNPs are removed from the list and the procedure repeated until 
 #' no SNPs are left. Finally to determine the number of significant clusters 
 #' the first cluster is determined for which the p-Value of the cluster 
-#' representative is not smaller than \eqn{cluster_{number} * alpha / m} where 
+#' representative is not smaller than \eqn{cluster_{number} * \alpha / m} where 
 #' m is the number of SNPs and alpha can be specified by the function parameter 
 #' \code{alpha}. All previous clusters are selected as significant.}
 #' }
@@ -118,33 +120,33 @@
 #'
 #' @references Astle, William, and David J. Balding. 2009. Population Structure
 #' and Cryptic Relatedness in Genetic Association Studies. Statistical Science 
-#' 24 (4): 451–71. \url{https://doi.org/10.1214/09-sts307}.
+#' 24 (4): 451–71. \doi{10.1214/09-sts307}.
 #' @references Brzyski D. et al. (2017) Controlling the Rate of GWAS False 
 #' Discoveries. Genetics 205 (1): 61-75.
-#' \url{https://doi.org/10.1534/genetics.116.193987}
+#' \doi{10.1534/genetics.116.193987}
 #' @references Devlin, B., and Kathryn Roeder. 1999. Genomic Control for 
 #' Association Studies. Biometrics 55 (4): 997–1004. 
-#' \url{https://doi.org/10.1111/j.0006-341x.1999.00997.x}.
+#' \doi{10.1111/j.0006-341x.1999.00997.x}.
 #' @references Kang et al. (2008) Efficient Control of Population Structure in
 #' Model Organism Association Mapping. Genetics 178 (3): 1709–23. 
-#' \url{https://doi.org/10.1534/genetics.107.080101}.
+#' \doi{10.1534/genetics.107.080101}.
 #' @references Millet, E. J., Pommier, C., et al. (2019). A multi-site 
 #' experiment in a network of European fields for assessing the maize yield 
-#' response to environmental scenarios [Data set]. 
-#' \url{https://doi.org/10.15454/IASSTN}
+#' response to environmental scenarios - Data set. 
+#' \doi{10.15454/IASSTN}
 #' @references Rincent et al. (2014) Recovering power in association mapping
 #' panels with variable levels of linkage disequilibrium. Genetics 197 (1): 
-#' 375–87. \url{https://doi.org/10.1534/genetics.113.159731}.
+#' 375–87. \doi{10.1534/genetics.113.159731}.
 #' @references Segura et al. (2012) An efficient multi-locus mixed-model
 #' approach for genome-wide association studies in structured populations.
-#' Nature Genetics 44 (7): 825–30. \url{https://doi.org/10.1038/ng.2314}.
+#' Nature Genetics 44 (7): 825–30. \doi{10.1038/ng.2314}.
 #' @references Sun et al. (2010) Variation explained in mixed-model association
-#' mapping. Heredity 105 (4): 333–40. \url{https://doi.org/10.1038/hdy.2010.11}.
+#' mapping. Heredity 105 (4): 333–40. \doi{10.1038/hdy.2010.11}.
 #' @references Tunnicliffe W. (1989) On the use of marginal likelihood in time
 #' series model estimation. JRSS 51 (1): 15–27.
 #' @references VanRaden P.M. (2008) Efficient methods to compute genomic
 #' predictions. Journal of Dairy Science 91 (11): 4414–23. 
-#' \url{https://doi.org/10.3168/jds.2007-0980}.
+#' \doi{10.3168/jds.2007-0980}.
 #' 
 #' @examples 
 #' ## Create a gData object Using the data from the DROPS project.
@@ -152,16 +154,21 @@
 #' data(dropsMarkers)
 #' data(dropsMap)
 #' data(dropsPheno)
+#' 
 #' ## Add genotypes as row names of dropsMarkers and drop Ind column.
 #' rownames(dropsMarkers) <- dropsMarkers[["Ind"]]
 #' dropsMarkers <- dropsMarkers[colnames(dropsMarkers) != "Ind"]
+#' 
 #' ## Add genotypes as row names of dropsMap.
 #' rownames(dropsMap) <- dropsMap[["SNP.names"]]
+#' 
 #' ## Rename Chomosome and Position columns.
 #' colnames(dropsMap)[match(c("Chromosome", "Position"), 
 #'                    colnames(dropsMap))] <- c("chr", "pos")
+#'                    
 #' ## Convert phenotypic data to a list.
 #' dropsPhenoList <- split(x = dropsPheno, f = dropsPheno[["Experiment"]])
+#' 
 #' ## Rename Variety_ID to genotype and select relevant columns.
 #' dropsPhenoList <- lapply(X = dropsPhenoList, FUN = function(trial) {
 #'   colnames(trial)[colnames(trial) == "Variety_ID"] <- "genotype"
@@ -170,6 +177,8 @@
 #'                  "ear.height")]
 #' return(trial)
 #' }) 
+#' 
+#' ## Create gData object.
 #' gDataDrops <- createGData(geno = dropsMarkers, map = dropsMap, 
 #'                           pheno = dropsPhenoList)
 #'                           
@@ -340,7 +349,7 @@ runSingleTraitGwas <- function(gData,
                                           key = "snp")
       if (GLSMethod == "single") {
         ## Determine segregating markers. Exclude snps used as covariates.
-        segMarkers <- which(abs(allFreq) < 1 -  MAF)
+        segMarkers <- which(abs(allFreq) > MAF)
         ## Exclude snpCovariates from segregating markers.
         exclude <- exclMarkers(snpCov = snpCov, markers = markersRed,
                                allFreq = allFreq)
@@ -376,7 +385,7 @@ runSingleTraitGwas <- function(gData,
                                         rownames(mapRedChr), drop = FALSE]
           allFreqChr <- colMeans(markersRedChr, na.rm = TRUE) / maxScore
           ## Determine segregating markers. Exclude snps used as covariates.
-          segMarkersChr <- which(abs(allFreqChr) < 1 -  MAF)
+          segMarkersChr <- which(abs(allFreqChr) > MAF)
           ## Exclude snpCovariates from segregating markers.
           exclude <- exclMarkers(snpCov = snpCov, markers = markersRedChr,
                                  allFreq = allFreqChr)
@@ -471,6 +480,7 @@ runSingleTraitGwas <- function(gData,
                    thrType = thrType,
                    MAF = MAF,
                    GLSMethod = GLSMethod,
+                   kinshipMethod = attr(K, which = "method"),
                    varComp = varCompTot,
                    genomicControl = genomicControl,
                    inflationFactor = inflationFactorTot)

@@ -10,6 +10,7 @@ codeMarkers(
   nMissGeno = 1,
   nMiss = 1,
   MAF = NULL,
+  MAC = NULL,
   removeDuplicates = TRUE,
   keep = NULL,
   impute = TRUE,
@@ -31,15 +32,20 @@ allele for the whole set of SNPs, or a character vector with a reference
 allele per SNP.}
 
 \item{nMissGeno}{A numerical value between 0 and 1. Genotypes with a
-fraction of missing values higher than \code{nMissGeno} will be removed. 
+fraction of missing values higher than \code{nMissGeno} will be removed.
 Genotypes with only missing values will always be removed.}
 
 \item{nMiss}{A numerical value between 0 and 1. SNPs with a fraction of
-missing values higher than \code{nMiss} will be removed. SNPs with only 
+missing values higher than \code{nMiss} will be removed. SNPs with only
 missing values will always be removed.}
 
 \item{MAF}{A numerical value between 0 and 1. SNPs with a Minor Allele
-Frequency (MAF) below this value will be removed.}
+Frequency (MAF) below this value will be removed. Only one of \code{MAF}
+and \code{MAC} may be specified.}
+
+\item{MAC}{A numerical value. SNPs with Minor Allele Count (MAC) below this
+value will be removed. Only one of \code{MAF} and \code{MAC} may be
+specified.}
 
 \item{removeDuplicates}{Should duplicate SNPs be removed?}
 
@@ -54,9 +60,9 @@ values should be done.\cr
 \item{fixed - missing values will be replaced by a given fixed value.}
 \item{random - missing values will be replaced by a random value calculated
 using allele frequencies per SNP.}
-\item{beagle - missing values will be imputed using beagle software. Beagle
-only accepts integers as map positions. If you use this option, please cite
-the original papers in your publication (see references).}
+\item{beagle - missing values will be imputed using beagle software, version
+5.2. Beagle only accepts integers as map positions. If you use this option,
+please cite the original papers in your publication (see references).}
 }}
 
 \item{fixedValue}{A numerical value used for replacing missing values in
@@ -121,7 +127,8 @@ gDataCoded3 <- codeMarkers(gData = gData, impute = TRUE,
 
 }
 \references{
-B L Browning and S R Browning (2016). Genotype imputation with
-millions of reference samples. Am J Hum Genet 98:116-126.
-doi:10.1016/j.ajhg.2015.11.020
+S R Browning and B L Browning (2007) Rapid and accurate haplotype
+phasing and missing data inference for whole genome association studies by
+use of localized haplotype clustering. Am J Hum Genet 81:1084-1097.
+\doi{10.1086/521987}
 }

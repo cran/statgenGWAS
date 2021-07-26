@@ -169,14 +169,14 @@ genCtrlPVals <- function(pVals,
   df2 <- nObs - nCov - 2
   pValsNew <- pVals
   ## Compute F-values from input p-values.
-  fVals <- qf(p = na.omit(pVals), df1 = 1, df2 = df2, lower.tail = FALSE)
+  fVals <- qf(p = na.omit(pVals), df1 = 1, df2 = df2, lower.tail = TRUE)
   ## Compute inflation factor as in Devlin and Roeder.
   inflation <- median(fVals, na.rm = TRUE) /
-    qf(p = 0.5, df1 = 1, df2 = df2, lower.tail = FALSE)
+    qf(p = 0.5, df1 = 1, df2 = df2, lower.tail = TRUE)
   ## Compute new F-values and p-values.
   fValsNew <- fVals / inflation
   pValsNew[!is.na(pVals)] <- pf(q = fValsNew, df1 = 1, df2 = df2,
-                                lower.tail = FALSE)
+                                lower.tail = TRUE)
   return(list(pValues = pValsNew, inflation = inflation))
 }
 
@@ -240,38 +240,40 @@ extrSignSnpsFDR <- function(GWAResult,
   ## Get named vector of p Values.
   pVals <- setNames(GWAResult$pValue, GWAResult$snp)
   ## Subset p Values base on threshold.
-  B <- pVals[pVals < pThr]
+  B <- pVals[!is.na(pVals) & pVals < pThr]
   ## Subset markers based on selected p Values.
   BMarkers <- markers[, colnames(markers) %in% names(B), drop = FALSE]
+  ## Get named vector of chromosomes.
+  chrs <- setNames(GWAResult$chr[GWAResult$snp %in% names(B)], names(B))
   ## Compute selection threshold.
   selThr <- alpha / length(pVals)
   ## Initialize values.
   BpVals <- numeric()
-  snpSelection <- character()
-  continue <- TRUE
-  nClust <- 0
-  while (length(B) > 0 && continue) {
+  snpSelection <- vector(mode = "list")
+  while (length(B) > 0) {
     ## Next cluster is represented by remaining SNP with lowest p Value.
     clusterRep <- which.min(B) 
-    ## Only continue if next p Value satisfies criterion.
-    ## After the first failure all following clusters are irrelevant.
-    if (B[clusterRep] < (nClust + 1) * selThr) {
-      ## Add p Value for representing SNP to output.
-      BpVals <- c(BpVals, B[clusterRep])
-      ## Find all remaining SNPs within LD of at least rho of representing SNP.
-      LD <- cor(BMarkers[, names(clusterRep)], BMarkers)
-      LDSet <- names(LD[, LD > rho])
-      ## Remove selected SNPs from B and from markers.
-      B <- B[!names(B) %in% LDSet]
-      BMarkers <- BMarkers[, !colnames(BMarkers) %in% LDSet, drop = FALSE]
-      ## Add LD set to selected SNPs.
-      ## Using union assures representing SNP will be the first in the list.
-      snpSelection <- c(snpSelection, union(names(snpSelection), LDSet))
-      nClust <- nClust + 1
-    } else {
-      continue <- FALSE
-    }
+    ## Add p Value for representing SNP to output.
+    BpVals <- c(BpVals, B[clusterRep])
+    ## Get chromosome for clusterRep.
+    clusterRepChr <- chrs[clusterRep]
+    ## Restrict BMarkers to markers on same chromosome as clusterRep.
+    BMarkersChr <- BMarkers[, names(chrs[chrs == clusterRepChr]), drop = FALSE]
+    ## Find all remaining SNPs within LD of at least rho of representing SNP.
+    LD <- cor(BMarkers[, names(clusterRep)], BMarkersChr)
+    LDSet <- names(LD[, LD > rho])
+    ## Remove selected SNPs from B and from markers.
+    B <- B[!names(B) %in% LDSet]
+    chrs <- chrs[!names(chrs) %in% LDSet]
+    BMarkers <- BMarkers[, !colnames(BMarkers) %in% LDSet, drop = FALSE]
+    ## Add LD set to selected SNPs.
+    ## Using union assures representing SNP will be the first in the list.
+    snpSelection <- c(snpSelection, list(union(names(snpSelection), LDSet)))
   }
+  ## Compute number of clusters.
+  nClust <- max(which(BpVals < alpha / (1:length(BpVals))))
+  ## Convert SNPs in selected clusters to vector.
+  snpSelection <- c(unlist(snpSelection[1:nClust]))
   if (nClust > 0) {
     ## Create a vector of SNP statuses, differentiating between representing
     ## SNPs and everything else.

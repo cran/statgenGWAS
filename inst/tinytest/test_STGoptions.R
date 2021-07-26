@@ -52,10 +52,10 @@ expect_error(runSingleTraitGwas(gData = gDataTest, traits = "X1", trials = 1,
 # No difference here for GLSMethod single and multi so only check single.
 
 stg3 <- runSingleTraitGwas(gData = gDataTest, traits = "X1", trials = 1, 
-                           useMAF = FALSE, MAC = 2)
-# MAC = 2 causes M3 to be non-segregating.
-expect_equal(stg3$GWASInfo$MAF, 0.19999)
-expect_equal(stg3$GWAResult$ph1$pValue[3], NA_real_)
+                           useMAF = FALSE, MAC = 7)
+# MAC = 7 causes M1 to be non-segregating.
+expect_equal(stg3$GWASInfo$MAF, 0.69999)
+expect_equal(stg3$GWAResult$ph1$pValue[1], NA_real_)
 
 ## Test option thrType.
 
@@ -89,15 +89,15 @@ expect_true(is.na(stg5$thr$ph1))
 expect_equal(nrow(stg5$signSnp$ph1), 3)
 expect_equal(as.character(stg5$signSnp$ph1$snpStatus),
              c("significant SNP", "within LD of significant SNP", 
-               "within LD of significant SNP"))
+               "significant SNP"))
 
 ## Test option genomicControl.
 
-stg5 <- runSingleTraitGwas(gData = gDataTest, traits = "X1", trials = 1, 
+stg6 <- runSingleTraitGwas(gData = gDataTest, traits = "X1", trials = 1, 
                            genomicControl = TRUE)
 
 # Should only affect pValue and LOD
-expect_equal(stg5$GWAResult$ph1$pValue, 
-             c(0.392496645680849, 0.5, 0.730937753019775))
-expect_equal(stg5$GWAResult$ph1$LOD, 
-             c(0.406164050430888, 0.301029995663981, 0.136119606176322))
+expect_equal(stg6$GWAResult$ph1$pValue, 
+             c(0.422667073511117, 0.5, 0.673478867897455))
+expect_equal(stg6$GWAResult$ph1$LOD, 
+             c(0.374001583137163, 0.301029995663981, 0.171676026814803))

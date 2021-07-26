@@ -31,7 +31,11 @@
 #' missing values higher than \code{nMiss} will be removed. SNPs with only 
 #' missing values will always be removed.
 #' @param MAF A numerical value between 0 and 1. SNPs with a Minor Allele
-#' Frequency (MAF) below this value will be removed.
+#' Frequency (MAF) below this value will be removed. Only one of \code{MAF} 
+#' and \code{MAC} may be specified.
+#' @param MAC A numerical value. SNPs with Minor Allele Count (MAC) below this 
+#' value will be removed. Only one of \code{MAF} and \code{MAC} may be 
+#' specified.
 #' @param removeDuplicates Should duplicate SNPs be removed?
 #' @param keep A vector of SNPs that should never be removed in the whole
 #' process.
@@ -42,9 +46,9 @@
 #' \item{fixed - missing values will be replaced by a given fixed value.}
 #' \item{random - missing values will be replaced by a random value calculated
 #' using allele frequencies per SNP.}
-#' \item{beagle - missing values will be imputed using beagle software. Beagle
-#' only accepts integers as map positions. If you use this option, please cite
-#' the original papers in your publication (see references).}
+#' \item{beagle - missing values will be imputed using beagle software, version
+#' 5.2. Beagle only accepts integers as map positions. If you use this option,
+#' please cite the original papers in your publication (see references).}
 #' }
 #' @param fixedValue A numerical value used for replacing missing values in
 #' case \code{inputType} is fixed.
@@ -54,9 +58,10 @@
 #' @return A copy of the input \code{gData} object with markers replaced by
 #' coded and imputed markers.
 #'
-#' @references B L Browning and S R Browning (2016). Genotype imputation with
-#' millions of reference samples. Am J Hum Genet 98:116-126.
-#' doi:10.1016/j.ajhg.2015.11.020
+#' @references S R Browning and B L Browning (2007) Rapid and accurate haplotype
+#' phasing and missing data inference for whole genome association studies by 
+#' use of localized haplotype clustering. Am J Hum Genet 81:1084-1097. 
+#' \doi{10.1086/521987}
 #'
 #' @examples ## Create markers
 #' markers <- matrix(c(
@@ -96,6 +101,7 @@ codeMarkers <- function(gData,
                         nMissGeno = 1,
                         nMiss = 1,
                         MAF = NULL,
+                        MAC = NULL,
                         removeDuplicates = TRUE,
                         keep = NULL,
                         impute = TRUE,
@@ -111,8 +117,14 @@ codeMarkers <- function(gData,
   }
   chkNum(nMissGeno, min = 0, max = 1)
   chkNum(nMiss, min = 0, max = 1)
+  if (!is.null(MAF) && !is.null(MAC)) {
+    stop("Only one of MAF and MAC can be specified.\n")
+  }
   if (!is.null(MAF)) {
     chkNum(MAF, min = 0, max = 1)
+  }
+  if (!is.null(MAC)) {
+    chkNum(MAC, min = 0, max = 2 * nrow(gData$markers))
   }
   if (!is.null(keep) && (!is.character(keep) ||
                          !all(keep %in% colnames(gData$markers)))) {
@@ -188,6 +200,12 @@ codeMarkers <- function(gData,
   }
   ## Recode markers.
   if (!is.numeric(markersClean)) {
+    ## . is the default NA value in vcf format.
+    ## Perform an extra check that it is being removed.
+    if (any(markersClean == ".", na.rm = TRUE) && !"." %in% naStrings) {
+      stop("SNPs contain '.', but these are not set to missing values.\n
+           Specify '.' in naStrings to set them to missing values.") 
+    }
     if (refAll[1] == "minor") {
       refAlls <- character()
     } else if (length(refAll) > 1) {
@@ -204,6 +222,10 @@ codeMarkers <- function(gData,
     maxAll <- max(markersRecoded, na.rm = TRUE)
   }
   ## Remove markers with low MAF.
+  ## If MAC is specified convert it to MAF.
+  if (!is.null(MAC)) {
+    MAF <- MAC / (maxAll * nrow(markersRecoded)) - 1e-5
+  }
   if (!is.null(MAF)) {
     snpMAFs <- colMeans(markersRecoded, na.rm = TRUE)
     snpMAF <- snpMAFs >= maxAll * MAF & snpMAFs <= maxAll * (1 - MAF)
@@ -401,10 +423,10 @@ imputeBeagle <- function(markersRecoded,
   write.table(mapBeagle, file = tmpMap, col.names = FALSE, 
               row.names = FALSE, quote = FALSE, na = ".", sep = "\t")
   ## Convert markers to format suitable for beagle input.
-  all00 <- "0/0"
-  all01 <- "0/1"
-  all11 <- "1/1"
-  all10 <- "1/0"
+  all00 <- "0|0"
+  all01 <- "0|1"
+  all11 <- "1|1"
+  all10 <- "1|0"
   markersBeagle <- as.data.frame(t(markersRecoded),
                                  stringsAsFactors = FALSE)
   markersBeagle[markersBeagle == 0] <- all00
@@ -433,8 +455,8 @@ imputeBeagle <- function(markersRecoded,
   system(paste0("java -Xmx3000m -jar ",
                 shQuote(paste0(sort(path.package()[grep("statgenGWAS",
                                                         path.package())])[1],
-                               "/java/beagle.jar")), " gtgl=", tmpVcf, 
-                " out=", tmpVcfOut, " gprobs=true seed=1234 nthreads=", 1,
+                               "/java/beagle.jar")), " gt=", tmpVcf, 
+                " out=", tmpVcfOut, " gp=true seed=1234 nthreads=", 1,
                 " map=", tmpMap), intern = TRUE)
   ## Read beagle output.
   beagleOut <- read.table(gzfile(paste0(tmpVcfOut, ".vcf.gz")),

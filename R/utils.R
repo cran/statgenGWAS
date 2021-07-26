@@ -15,7 +15,7 @@ expandPheno <- function(gData,
   } else {
     ## Append covariates to pheno data. Merge to remove values from pheno that
     ## are missing in covar.
-    phTr <- merge(gData$pheno[[trial]], gData$covar[covar],
+    phTr <- merge(gData$pheno[[trial]], as.data.frame(gData$covar)[covar],
                   by.x = "genotype", by.y = "row.names")
     ## Remove rows from phTr with missing covar check if there are
     ## missing values.
@@ -29,7 +29,7 @@ expandPheno <- function(gData,
       covFormula <- as.formula(paste("genotype ~ ",
                                      paste(covar[factorCovs], collapse = "+")))
       extraCov <- as.data.frame(suppressWarnings(
-        model.matrix(object = covFormula, data = droplevels(phTr))))[, -1]
+        model.matrix.lm(object = covFormula, data = droplevels(phTr))))[, -1]
       ## Add dummy variables to pheno data.
       phTr <- cbind(phTr[, -which(colnames(phTr) %in% names(factorCovs))],
                     extraCov)
@@ -67,9 +67,11 @@ computeKin <- function(GLSMethod,
     if (!is.null(kin)) {
       ## kin is supplied as input. Convert to matrix.
       K <- as.matrix(kin)
+      kinshipMethod <- NULL
     } else if (!is.null(gData$kinship) && !inherits(gData$kinship, "list")) {
       ## Get kin from gData object.
       K <- gData$kinship
+      kinshipMethod <- NULL
     } else {
       ## Compute K from markers.
       K <- kinship(X = markers, method = kinshipMethod)
@@ -80,9 +82,11 @@ computeKin <- function(GLSMethod,
     if (!is.null(kin)) {
       ## kin is supplied as input. Convert to matrices.
       K <- lapply(X = kin, FUN = as.matrix)
+      kinshipMethod <- NULL
     } else if (!is.null(gData$kinship) && inherits(gData$kinship, "list")) {
       ## Get kin from gData object.
       K <- gData$kinship
+      kinshipMethod <- NULL
     } else {
       ## Compute chromosome specific kinship matrices.
       K <- chrSpecKin(markers = markers, map = map, 
@@ -93,6 +97,7 @@ computeKin <- function(GLSMethod,
         order(match(colnames(k), rownames(markers)))]
     })
   }
+  attr(K, which = "method") <- kinshipMethod
   return(K)
 }
 

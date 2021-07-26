@@ -155,7 +155,7 @@ To re-impute the missing values added above, *codeMarkers* has to be run with `i
 
 * `imputeType = "fixed"`: Impute all missing values by a single fixed value. Use the parameter `fixedValue` to set this value. 
 * `imputeType = "random"`: Impute missing values with a random value based on the non-missing values for a SNP. 
-* `imputeType = "beagle"`: Impute missing values using the independent beagle software [@Browning2016]. This software is included in the package and is called with its default settings. It requires java to run. Since running beagle takes a long time for the current data, the call to beagle is only shown here but not run.    
+* `imputeType = "beagle"`: Impute missing values using the independent beagle software [@Browning2007]. Version 5.2 of this software is included in the package and is called with its default settings. It requires java to run. Since running beagle takes a long time for the current data, the call to beagle is only shown here but not run.    
  
 Before imputation, genotypes with a high proportion of missing values in the marker matrix can be removed by setting the parameter nMissGeno. Setting it to 0.1 will remove all genotypes with a proportion of missing values higher than 0.1. In a similar way SNPs with a high proportion of missing values can be removed setting nMiss. The default value for both parameters is 1, so genotypes and SNPs with only missing values are always removed.  
 The parameter MAF can be used to remove SNPs with a Minor Allele Frequency (MAF) lower than the specified MAF. As with removing duplicate SNPs this will be done both before and after imputation.
@@ -181,7 +181,7 @@ gDataDropsImputedBeagle <- codeMarkers(gData = gDataDropsMiss,
 
 ## **Single trait GWAS**
 
-The cleaned gData object can be used for performing single trait GWAS analysis. With all the default settings the analysis already performs quite well. In the examples below the trial Mur13W is used to demonstrate the options of the *runSingleTraitGwas* function. 
+The cleaned gData object can be used for performing single trait GWAS analysis with the *runSingleTraitGwas* function. The default parameter values in the function are chosen in such a way that usually the analysis gives decent results. In the examples below the trial Mur13W is used to demonstrate the options of the *runSingleTraitGwas* function. 
 ```{r stg}
 ## Run single trait GWAS for traits 'grain.yield' and 'anthesis' for trial Mur13W.
 GWASDrops <- runSingleTraitGwas(gData = gDataDropsDedup,
@@ -207,6 +207,8 @@ The output of the *runSingleTraitGwas* function is an object of class GWAS. This
 ```{r gwaRes}
 print(head(GWASDrops$GWAResult$Mur13W), row.names = FALSE)
 ```
+
+Note that the estimated effect is computed for a single allele. Its direction depends on the coding of the markers in the gData object. In this example the minor allele was used as reference allele, so the effects are the estimated effects for the minor allele.  
 
 **signSnp**: a list of data.tables, one for each trial for which the analysis was run, containing the significant SNPs. Optionally also the SNPs close to the significant SNPs are included in the data.table. See [**3.6.7**](#sign) for more information on how to do this. The data.tables in signSnp consist of the same columns as those in GWAResult described above. Two extra columns are added:
 
@@ -258,6 +260,14 @@ To change the threshold when plotting, without having to redo the GWAS analysis,
 ## Set significance threshold to 4 and only plot chromosomes 6 to 8.
 plot(GWASDrops, plotType = "manhattan", trait = "grain.yield", yThr = 4, chr = 6:8)
 ```
+When plotting a single chromosome it is possible to specify `startPos` and/or `endPos` to indicate the start position and end position for SNPs that are plotted.
+```{r manhattanStgPos}
+## Plot a manhattan plot of GWAS Drops.
+## Set significance threshold to 4 and only plot first part of chromosome 6.
+plot(GWASDrops, plotType = "manhattan", trait = "grain.yield", 
+     yThr = 4, chr = 6, startPos = 0, endPos = 6e7)
+```
+
 
 If the number of SNPs gets large, the plotting might get slow. This can be dealt with by setting the parameter `lod`. When doing so, for the SNPs with a LOD-value below `lod`, only 5% will be plotted. The chance of a SNP being plotted is proportional to its LOD-value. SNPs with a higher LOD have a higher chance of being plotted. Since most SNPs will have low LOD-values, this restriction doesn't very much affect the resulting plot. Note that the 5% of the SNPs that is plotted, is selected randomly. For reproducible results make sure to set a seed. 
 
@@ -268,7 +278,18 @@ set.seed(1)
 plot(GWASDrops, plotType = "manhattan", trait = "grain.yield", lod = 3)
 ```
 
-The user can specify known effects (`effects`), which will be used for determining true/false positives and false negatives. These are displayed in green, orange and yellow, respectively. Also the visual appearence of the plot can be altered. See for specifics on how to do this `help(plot.GWAS)`.
+The user can specify known effects (`effects`), which will be used for determining true/false positives and false negatives. These are displayed in green, orange and yellow, respectively. 
+
+
+```{r manhattanEffects}
+## Plot a manhattan plot of GWAS Drops with significance threshold 4.
+## Assume PZE-106021410 and PZE-105012420 are SNPs with known effects.
+plot(GWASDrops, plotType = "manhattan", trait = "grain.yield", 
+     effects = c("PZE-106021410", "PZE-105012420"))
+```
+The plot now shows PZE-106021410 in green, since it is a SNP with a known effect also found by our GWAS analyses. The other SNPs on chromosome 6 are shown in orange, they are found by our GWAS, but not known effects. PZE-105012420 is shown in yellow, it is a SNP that has a known effect but it isn't picked up as significant by our analysis. Note that PZE-106021410 and PZE-105012420 are chosen solely to demonstrate how the effects options works when making a manhattan plot, they don't represent truly known effects.
+
+Also the visual appearance of the plot can be altered, e.g by specifying the colors for the chromosomes or a custom title. See for specifics on how to do this `help(plot.GWAS)`.
 
 #### QTL plots
 
@@ -328,7 +349,7 @@ The *runSingleTraitGwas* function has many more parameters that can be specified
 
 The analysis can be performed for more than one trait in a single function call. Not specifying `traits` at all will perform the analysis for all traits that are present in the phenotypic data in the gData object. The results will be combined in a single output object with the traits specified in the column *trait* in *GWAResult* and *signSnp* within this object. Running for multiple trials is also possible and will generate a list of outputs within *GWAResult* and *signSnp* in the output object. Not specifying `trials` will run the GWAS analysis for all trials in the phenotypic data in the gData object.
 
-### Significance thresholds {#sign}
+### Significance thresholds
 
 The threshold for selecting significant SNPs in a GWAS analysis is computed by default using Bonferroni correction, with an alpha of 0.05. The alpha can be modified setting the option *alpha* when calling *runSingleTraitGwas*. Two other threshold types can be used: a fixed threshold (`thrType = "fixed"`) specifying the $-\log_{10}(p)$ (*LODThr*) value of the threshold, or a threshold that defines the n SNPs with the highest $-\log_{10}(p)$ scores as significant SNPs. Set `thrType = "small"` together with `nSnpLOD = n` to do this. In the following example, we select all SNPs with $p < 10^{-4}$.
 
@@ -346,7 +367,9 @@ GWASDropsFixThr <- runSingleTraitGwas(gData = gDataDropsDedup,
 
 A final option for selecting significant SNPs is by setting `thrType = "fdr"`. When doing so the significant SNPs won't be selected by computing a genome wide threshold, but by trying to control the rate of false discoveries as in @Brzyski2016.    
 
-First, a list is defined containing all SNPs with a p-Value below `pThr`. Then clusters of SNPs are created using a two step iterative process in which SNPs with the lowest p-values are selected as cluster representatives. This SNP and all SNPs that have a correlation with this SNP of $\rho$ or higher (specified by the function parameter `rho`) will form a cluster. The selected SNPs are removed from the list and the procedure is repeated until no SNPs are left. At the end of this step, one has a list of clusters, with corresponding vector of p-values of the cluster representatives.  Finally, to determine the number of significant clusters, the first cluster is determined for which the p-value of the cluster representative is larger than $cluster_{number} * \alpha / m$, where $m$ is the number of SNPs and $\alpha$ can be specified by the corresponding function parameter. All previous clusters are selected as significant.
+First, a list is defined containing all SNPs with a p-Value below `pThr`. Then clusters of SNPs are created using a two step iterative process in which SNPs with the lowest p-values are selected as cluster representatives. This SNP and all SNPs that have a correlation with this SNP of $\rho$ or higher (specified by the function parameter `rho`) will form a cluster. The selected SNPs are removed from the list and the procedure is repeated until no SNPs are left. At the end of this step, one has a list of clusters, with corresponding vector of p-values of the cluster representatives. Finally, to determine the number of significant clusters, the first cluster is determined for which the p-value of the cluster representative is larger than $cluster_{number} * \alpha / m$, where $m$ is the number of SNPs and $\alpha$ can be specified by the corresponding function parameter. All previous clusters are selected as significant.
+
+Note that because of the way the significant SNPs are selected it is possible that a SNP with a lower p-Value than a significant SNP is not significant itself. This happens if that SNP is highly correlated to another SNP with an even lower p-Value. Because of this it is not possible to determine a threshold for the p-Value below which SNPs are significant. The value for the threshold in the output will therefor be `NA` and no line will be plotted for it in the manhattan plot.
 
 ### Variance covariance matrix
 
@@ -397,6 +420,7 @@ GWASDropsSnpCov <- runSingleTraitGwas(gData = gDataDropsDedup,
 
 It is recommended to remove SNPs with a low minor allele frequency (MAF) from the data before starting a GWAS analysis. However it is also possible to do so in the analysis itself. The difference between these approaches is that *codeMarkers* removes the SNPs, whereas *runSingleTraitGwas* excludes them from the analysis but leaves them in the output (with results set to NA). In the latter case it will still be possible to see the allele frequency of the SNP.  
 By default all SNPs with a MAF lower than 0.01 are excluded from the analysis. This can be controlled by the parameter `MAF`. Setting MAF to 0 will still exclude duplicate SNPs since duplicates cause problems when fitting the underlying models. Instead of excluding SNPs with a low MAF it is also possible to exclude SNPs with a low minor allele count (MAC). This is done setting `useMAF = FALSE` and then specifying `MAC`.   
+Note that the computation of allele frequencies in *runSingleTraitGwas* is done after the removal of genotypes that have missing values for the trait for which the analysis is done. This could lead to slightly different values for the allele frequencies than when these are computed in *codeMarkers* (which only uses the genotypic data) resulting in the removal a slightly different set of markers.
 
 ```{r stgMAC}
 ## Run single trait GWAS for trait 'grain.yield' for Mur13W.
@@ -408,7 +432,7 @@ GWASDropsMAC <- runSingleTraitGwas(gData = gDataDropsDedup,
                                    MAC = 20)
 ```
 
-### SNPs close to significant SNPs
+### SNPs close to significant SNPs {#sign}
 
 Apart from the significant SNPs themselves, it is usually of interest to identify SNPs that are close to the significant SNPs. These can be included in the output by setting `sizeIncludedRegion` to a positive value. When doing so, SNPs that are within a distance of `sizeIncludedRegion` from a significant SNP (based on the information in the map) are included in the signSnp data.table in the output. Only SNPs having sufficient linkage disequilibrium (LD) with the significant SNP are included. LD is measured in terms of the squared Pearson correlation ($R^2$). The minimum $R^2$ required to be included can be specified by setting `minR2`.
 

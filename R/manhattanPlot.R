@@ -7,6 +7,8 @@
 #'
 #' @param xValues A vector of cumulative marker positions.
 #' @param yValues A vector of LOD-scores.
+#' @param plotType A character string indicating whether the plot should 
+#' consist of dots or lines.
 #' @param map A data.frame with at least the columns chr, the number of the
 #' chromosome and cumPos, the cumulative position of the SNP the cumulative
 #' position of the SNP starting from the first chromosome.
@@ -24,7 +26,7 @@
 #' @param output Should the plot be output to the current device? If
 #' \code{FALSE} only a list of ggplot objects is invisibly returned.
 #'
-#' @return A LOD-profile with LOD-scores per snip. Markers declared significant
+#' @return A LOD-profile with LOD-scores per SNP. Markers declared significant
 #' get a red dot, markers with a real effect get a blue dot. If both significant
 #' and real effects are given false positives get an orange dot, true negatives
 #' a yellow dot and true positives a green dot.
@@ -35,6 +37,7 @@
 #' @keywords internal
 manhattanPlot <- function(xValues,
                           yValues,
+                          plotType = c("dots", "lines"),
                           map,
                           xLab = "Chromosomes",
                           yLab = expression(-log[10](p)),
@@ -43,6 +46,7 @@ manhattanPlot <- function(xValues,
                           colPalette = rep(c("black", "grey50"), 50),
                           yThr = NULL,
                           signLwd = 0.6,
+                          title = "",
                           ...,
                           output = TRUE) {
   ## Basic argument checks
@@ -52,6 +56,7 @@ manhattanPlot <- function(xValues,
   if (is.null(yValues) || !is.numeric(yValues)) {
     stop("yValues should be a numerical vector.\n")
   }
+  plotType <- match.arg(plotType)
   ## Check correspondence xValues and yValues
   if (length(xValues) != length(yValues)) {
     stop("xValues and yValues should be of the same length.\n")
@@ -85,17 +90,22 @@ manhattanPlot <- function(xValues,
   } else {
     plotDat[-c(xSig, xEffects),  ]
   }, ggplot2::aes_string(x = "x", y = "y", color = "chr")) +
-    ggplot2::geom_point(na.rm = TRUE) +
     ggplot2::scale_y_continuous(limits = c(0, yMax),
                                 expand = c(0, 0, 0.1, 0)) +
-    ggplot2::scale_x_continuous(breaks = xMarks, labels = chrs, limits = c(0, NA), 
+    ggplot2::scale_x_continuous(breaks = xMarks, labels = chrs, 
                                 expand = c(0, 0)) +
     ggplot2::scale_color_manual(values = colPalette, labels = NULL) +
     ggplot2::coord_cartesian(clip = "off") +
-    ggplot2::labs(x = xLab, y = yLab) +
+    ggplot2::labs(title = title, x = xLab, y = yLab) +
     ggplot2::theme(legend.position = "none",
                    panel.grid.major.x = ggplot2::element_blank(),
-                   panel.grid.minor.x = ggplot2::element_blank())
+                   panel.grid.minor.x = ggplot2::element_blank(),
+                   plot.title = ggplot2::element_text(hjust = 0.5))
+  if (plotType == "dots") {
+    p <- p + ggplot2::geom_point(na.rm = TRUE)
+  } else if(plotType == "lines") {
+    p <- p + ggplot2::geom_line(data = plotDat, na.rm = TRUE)
+  }
   if (length(xSig) > 0 && length(xEffects) == 0) {
     p <- p + ggplot2::geom_point(data = plotDat[xSig, , drop = FALSE], 
                                  color = "red")

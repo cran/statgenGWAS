@@ -57,6 +57,9 @@ p1 <- statgenGWAS:::qtlPlot(dat = qtlDat, map = map,
                             yLab = "Testlab")
 expect_equal(p1$labels$y, "Testlab")
 
+p1 <- statgenGWAS:::qtlPlot(dat = qtlDat, map = map, title = "Test title")
+expect_equal(p1$labels$title, "Test title")
+
 # Check for result of GWAS.
 
 expect_error(plot(stg, plotType = "qtl", trial = "ph1"),
@@ -157,9 +160,11 @@ map <- data.frame(chr = rep(1:2, each = 3), cumPos = 1:6)
 p <- statgenGWAS:::manhattanPlot(xValues = 1:6, yValues = 3:8, map = map)
 expect_true(inherits(p, "ggplot"))
 p1 <- statgenGWAS:::manhattanPlot(xValues = 1:6, yValues = 3:8, map = map, 
-                                  xLab = "labx", yLab = "laby")
+                                  xLab = "labx", yLab = "laby", 
+                                  title = "Test title")
 expect_equal(p1$labels$x, "labx")
 expect_equal(p1$labels$y, "laby")
+expect_equal(p1$labels$title, "Test title")
 
 # Check for result of GWAS.
 
@@ -177,6 +182,23 @@ expect_error(plot(stg, plotType = "manhattan", trial = "ph1", trait = "X1",
 p1 <- plot(stg, plotType = "manhattan", trial = "ph1", trait = "X1",
            chr = 1)
 expect_equal(nrow(p1$data), 2)
+
+# Check options startPos/endPos.
+expect_error(plot(stg, plotType = "manhattan", trial = "ph1", trait = "X1",
+                  chr = 1, startPos = -1),
+             "startPos should be a single numerical value between 0 and 2")
+expect_error(plot(stg, plotType = "manhattan", trial = "ph1", trait = "X1",
+                  chr = 1, endPos = -1),
+             "endPos should be a single numerical value greater than 0")
+expect_error(plot(stg, plotType = "manhattan", trial = "ph1", trait = "X1",
+                  chr = 1, startPos = 1, endPos = 0),
+             "Start position should be smaller than end position")
+expect_error(plot(stg, plotType = "manhattan", trial = "ph1", trait = "X1",
+                  chr = 1, startPos = 1.5, endPos = 1.6),
+             "No SNPs in selected range")
+p1 <- plot(stg, plotType = "manhattan", trial = "ph1", trait = "X1",
+           chr = 1, startPos = 2, endPos = 2)
+expect_equal(nrow(p1$data), 1)
 
 # Check option effects.
 expect_error(plot(stg, plotType = "manhattan", trial = "ph1", trait = "X1",

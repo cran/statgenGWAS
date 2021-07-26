@@ -101,11 +101,23 @@ plot(GWASDrops, plotType = "manhattan", trait = "grain.yield")
 ## Set significance threshold to 4 and only plot chromosomes 6 to 8.
 plot(GWASDrops, plotType = "manhattan", trait = "grain.yield", yThr = 4, chr = 6:8)
 
+## ----manhattanStgPos------------------------------------------------------------------------------
+## Plot a manhattan plot of GWAS Drops.
+## Set significance threshold to 4 and only plot first part of chromosome 6.
+plot(GWASDrops, plotType = "manhattan", trait = "grain.yield", 
+     yThr = 4, chr = 6, startPos = 0, endPos = 6e7)
+
 ## ----manhattanLod---------------------------------------------------------------------------------
 ## Plot a manhattan plot of GWAS Drops.
 ## Plot only 5% of SNPs with a LOD below 3.
 set.seed(1)
 plot(GWASDrops, plotType = "manhattan", trait = "grain.yield", lod = 3)
+
+## ----manhattanEffects-----------------------------------------------------------------------------
+## Plot a manhattan plot of GWAS Drops with significance threshold 4.
+## Assume PZE-106021410 and PZE-105012420 are SNPs with known effects.
+plot(GWASDrops, plotType = "manhattan", trait = "grain.yield", 
+     effects = c("PZE-106021410", "PZE-105012420"))
 
 ## ----qtlStg---------------------------------------------------------------------------------------
 ## Plot a qtl plot of GWAS Drops for Mur13W.
