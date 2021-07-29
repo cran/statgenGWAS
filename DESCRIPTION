@@ -1,8 +1,8 @@
 Package: statgenGWAS
 Type: Package
 Title: Genome Wide Association Studies
-Version: 1.0.6
-Date: 2021-07-26
+Version: 1.0.7
+Date: 2021-07-27
 Authors@R: c(person(given = "Bart-Jan", 
                     family = "van Rossum", 
                     email = "bart-jan.vanrossum@wur.nl", 
@@ -65,7 +65,7 @@ URL: https://biometris.github.io/statgenGWAS/index.html,
         https://github.com/Biometris/statgenGWAS/
 BugReports: https://github.com/Biometris/statgenGWAS/issues
 NeedsCompilation: yes
-Packaged: 2021-07-26 14:27:52 UTC; rossu027
+Packaged: 2021-07-27 12:10:40 UTC; rossu027
 Author: Bart-Jan van Rossum [aut, cre]
     (<https://orcid.org/0000-0002-8673-2514>),
   Willem Kruijer [aut] (<https://orcid.org/0000-0001-7179-1733>),
@@ -80,4 +80,4 @@ Author: Bart-Jan van Rossum [aut, cre]
   Choazhi Zheng [ctb] (<https://orcid.org/0000-0001-6030-3933>)
 Maintainer: Bart-Jan van Rossum <bart-jan.vanrossum@wur.nl>
 Repository: CRAN
-Date/Publication: 2021-07-26 15:40:02 UTC
+Date/Publication: 2021-07-29 08:30:02 UTC
