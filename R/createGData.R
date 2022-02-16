@@ -122,7 +122,12 @@ createGData <- function(gData = NULL,
       warning("Existing map will be overwritten.\n", call. = FALSE)
     }
     ## Extract columns and order.
-    map <- map[order(map[["chr"]], map[["pos"]]), c("chr", "pos")]
+    chkNum <- tryCatch(as.numeric(map[["chr"]]), warning = function(w) w)
+    if (is.numeric(map[["chr"]]) || inherits(chkNum, "warning")) {
+      map <- map[order(map[["chr"]], map[["pos"]]), c("chr", "pos")]
+    } else {
+      map <- map[order(chkNum, map[["pos"]]), c("chr", "pos")]
+    }
     if (all(rownames(map) %in% as.character(1:nrow(map)))) {
       ## If no marker name in input compute them from chromosome and position.
       ## Names are made unique if necessary by adding a suffix _1, _2, etc.
@@ -458,7 +463,8 @@ summary.gData <- function(object,
   }
   if (!is.null(pheno)) {
     phenoSum <- sapply(X = names(pheno[trials]), FUN = function(trial) {
-      trSum <- do.call(cbind, lapply(X = pheno[[trial]][, -1], FUN = summaryNA))
+      trSum <- do.call(cbind, lapply(X = pheno[[trial]][, -1, drop = FALSE], 
+                                     FUN = summaryNA))
       attr(x = trSum, which = "nGeno") <- 
         length(unique(pheno[[trial]][["genotype"]]))
       return(trSum)
@@ -472,7 +478,7 @@ summary.gData <- function(object,
   return(structure(totSum, class = "summary.gData"))
 }
 
-#' Printing summazed objects of class gData
+#' Printing summarized objects of class gData
 #'
 #' \code{print} method for object of class summary.gData created by summarizing
 #' objects of class gData.
@@ -520,3 +526,65 @@ print.summary.gData <- function(x,
     print(x$covarSum)
   }
 }
+
+#' Plot function for the class \code{gData}
+#'
+#' Creates a plot of the genetic map in an object of S3 class \code{gData}. A 
+#' plot of the genetic map showing the length of the chromosomes and the 
+#' positions of the markers in the genetic map is created.
+#' 
+#' @param x An object of class \code{gData}.
+#' @param ... Not used.
+#' @param highlight A data.frame with at least columns chr and pos, 
+#' containing marker positions that should be highlighted in the plot. If a 
+#' column "name" is present that is used for annotation, otherwise the 
+#' highlighted markers are annotated as chr\@pos#' 
+#' @param title A character string, the title of the plot.
+#' @param output Should the plot be output to the current device? If
+#' \code{FALSE}, only a ggplot object is invisibly returned.
+#' 
+#' @return An object of class \code{ggplot} is invisibly returned.
+#'  
+#' @examples
+#' set.seed(1234)
+#' ## Create genotypic data.
+#' geno <- matrix(sample(x = c(0, 1, 2), size = 15, replace = TRUE), nrow = 3)
+#' dimnames(geno) <- list(paste0("G", 1:3), paste0("M", 1:5))
+#'
+#' ## Construct map.
+#' map <- data.frame(chr = c(1, 1, 2, 2, 2), pos = 1:5,
+#'                   row.names = paste0("M", 1:5))
+#'
+#' ## Compute kinship matrix.
+#' kin <- kinship(X = geno, method = "IBS")
+#'
+#' ## Create phenotypic data.
+#' pheno <- data.frame(paste0("G", 1:3),
+#'                     matrix(rnorm(n = 12, mean = 50, sd = 5), nrow = 3),
+#'                     stringsAsFactors = FALSE)
+#' dimnames(pheno) = list(paste0("G", 1:3), c("genotype", paste0("T", 1:4)))
+#'
+#' ## Combine all data in gData object.
+#' gData <- createGData(geno = geno, map = map, kin = kin, pheno = pheno)
+#' 
+#' ## Plot genetic map.
+#' plot(gData)
+#' 
+#' ## Plot genetic map. Highlight first marker in map.
+#' plot(gData, highlight = map[1, ])
+#'  
+#' @export
+plot.gData <- function(x,
+                       ...,
+                       highlight = NULL,
+                       title = NULL,
+                       output = TRUE) {
+  map <- x$map
+  if (is.null(map)) {
+    stop("No map present in the gData object. Plotting not possible.\n")
+  }
+  p <- geneticMapPlot(map = map, highlight = highlight, title = title, 
+                      output = output)
+  invisible(p)
+}
+

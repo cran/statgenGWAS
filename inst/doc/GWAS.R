@@ -43,6 +43,15 @@ gDataDrops <- createGData(gData = gDataDrops, pheno = dropsPhenoList)
 ## Summarize gDataDrops.
 summary(gDataDrops, trials = "Mur13W")
 
+## ----plotGData------------------------------------------------------------------------------------
+## Plot genetic map.
+plot(gDataDrops)
+
+## ----plotGDataHL----------------------------------------------------------------------------------
+## Plot genetic map.
+## Highlight the 20.000th marker in the map.
+plot(gDataDrops, highlight = dropsMap[20000, ])
+
 ## ----removeDupMarkers-----------------------------------------------------------------------------
 ## Remove duplicate SNPs from gDataDrops.
 gDataDropsDedup <- codeMarkers(gDataDrops, impute = FALSE, verbose = TRUE) 
@@ -58,7 +67,7 @@ gDataDropsMiss$markers[sample(x = 1:nVal, size = nVal / 100)] <- NA
 ## ----imputeMissings-------------------------------------------------------------------------------
 ## Impute missing values with random value.
 ## Remove SNPs and genotypes with proportion of NA larger than 0.01.
-gDataDropsImputed <- codeMarkers(gData = gDataDropsMiss, 
+gDataDropsImputed <- codeMarkers(gData = gDataDropsMiss,
                                  nMissGeno = 0.01, 
                                  nMiss = 0.01, 
                                  impute = TRUE, 

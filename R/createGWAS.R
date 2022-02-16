@@ -262,7 +262,7 @@ summary.GWAS <- function(object,
 #' }
 #'
 #' @param x An object of class \code{GWAS}.
-#' @param ... further arguments to be passed on to the actual plotting
+#' @param ... Further arguments to be passed on to the actual plotting
 #' functions.
 #' @param plotType A character string indicating the type of plot to be made.
 #' One of "manhattan", "qq" and "qtl".
@@ -389,6 +389,8 @@ plot.GWAS <- function(x,
     }
   }
   GWAResult <- x$GWAResult[[trial]]
+  GWAResult[["chr"]] <- factor(GWAResult[["chr"]], 
+                               levels = unique(GWAResult[["chr"]]))
   signSnp <- x$signSnp[[trial]]
   if (plotType != "qtl") {
     if (is.null(trait)) {
@@ -404,6 +406,10 @@ plot.GWAS <- function(x,
     }
     GWASel <- GWAResult[["trait"]] == trait
     GWAResult <- GWAResult[GWASel, ]
+    if (nrow(GWAResult) == 0) {
+      stop("No observations for ", trait, " in trial ", 
+           names(x$GWAResult)[trial], ".\n")
+    }
     signSel <- signSnp[["trait"]] == trait
     signSnp <- signSnp[signSel, ]
   }
@@ -412,7 +418,7 @@ plot.GWAS <- function(x,
     GWAResult <- GWAResult[!is.na(GWAResult$pos), ]
     ## Select specific chromosome(s) for plotting.
     if (!is.null(dotArgs$chr)) {
-      GWAResult <- GWAResult[GWAResult$chr %in% dotArgs$chr, ]
+      GWAResult <- droplevels(GWAResult[GWAResult$chr %in% dotArgs$chr, ])
       if (nrow(GWAResult) == 0) {
         stop("Select at least one valid chromosome for plotting.\n")
       }

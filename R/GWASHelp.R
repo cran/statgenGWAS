@@ -169,14 +169,14 @@ genCtrlPVals <- function(pVals,
   df2 <- nObs - nCov - 2
   pValsNew <- pVals
   ## Compute F-values from input p-values.
-  fVals <- qf(p = na.omit(pVals), df1 = 1, df2 = df2, lower.tail = TRUE)
+  fVals <- qf(p = na.omit(pVals), df1 = 1, df2 = df2, lower.tail = FALSE)
   ## Compute inflation factor as in Devlin and Roeder.
   inflation <- median(fVals, na.rm = TRUE) /
-    qf(p = 0.5, df1 = 1, df2 = df2, lower.tail = TRUE)
+    qf(p = 0.5, df1 = 1, df2 = df2, lower.tail = FALSE)
   ## Compute new F-values and p-values.
   fValsNew <- fVals / inflation
   pValsNew[!is.na(pVals)] <- pf(q = fValsNew, df1 = 1, df2 = df2,
-                                lower.tail = TRUE)
+                                lower.tail = FALSE)
   return(list(pValues = pValsNew, inflation = inflation))
 }
 
@@ -260,7 +260,7 @@ extrSignSnpsFDR <- function(GWAResult,
     ## Restrict BMarkers to markers on same chromosome as clusterRep.
     BMarkersChr <- BMarkers[, names(chrs[chrs == clusterRepChr]), drop = FALSE]
     ## Find all remaining SNPs within LD of at least rho of representing SNP.
-    LD <- cor(BMarkers[, names(clusterRep)], BMarkersChr)
+    LD <- abs(cor(BMarkers[, names(clusterRep)], BMarkersChr))
     LDSet <- names(LD[, LD > rho])
     ## Remove selected SNPs from B and from markers.
     B <- B[!names(B) %in% LDSet]
@@ -270,11 +270,11 @@ extrSignSnpsFDR <- function(GWAResult,
     ## Using union assures representing SNP will be the first in the list.
     snpSelection <- c(snpSelection, list(union(names(snpSelection), LDSet)))
   }
-  ## Compute number of clusters.
-  nClust <- max(which(BpVals < alpha / (1:length(BpVals))))
-  ## Convert SNPs in selected clusters to vector.
-  snpSelection <- c(unlist(snpSelection[1:nClust]))
-  if (nClust > 0) {
+  if (BpVals[1] < alpha) {
+    ## Compute number of clusters.
+    nClust <- max(which(BpVals < alpha / (1:length(BpVals))))
+    ## Convert SNPs in selected clusters to vector.
+    snpSelection <- c(unlist(snpSelection[1:nClust]))
     ## Create a vector of SNP statuses, differentiating between representing
     ## SNPs and everything else.
     snpStatus <- ifelse(snpSelection %in% names(BpVals), "significant SNP",
