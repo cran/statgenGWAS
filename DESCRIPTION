@@ -1,8 +1,8 @@
 Package: statgenGWAS
 Type: Package
 Title: Genome Wide Association Studies
-Version: 1.0.8
-Date: 2022-02-16
+Version: 1.0.9
+Date: 2022-10-13
 Authors@R: c(person(given = "Bart-Jan", 
                     family = "van Rossum", 
                     email = "bart-jan.vanrossum@wur.nl", 
@@ -18,7 +18,8 @@ Authors@R: c(person(given = "Bart-Jan",
                     comment = c(ORCID = "0000-0003-3672-2921")),
              person(given = "Martin", 
                     family = "Boer",
-                    role = "ctb"),
+                    role = "ctb",
+                    comment = c(ORCID = "0000-0002-1879-4588")),
              person(given = "Marcos",
                     family = "Malosetti",
                     role = "ctb",
@@ -55,22 +56,23 @@ Description: Fast single trait Genome Wide Association Studies (GWAS) following
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.1
 Depends: R (>= 3.6)
-Imports: data.table, ggplot2 (>= 3.0.0), sommer (>= 3.7.3), Rcpp
-Suggests: knitr, rmarkdown, officer, tinytest
+Imports: data.table, ggplot2 (>= 3.0.0), methods, sommer (>= 3.7.3),
+        Rcpp
+Suggests: knitr, rmarkdown, officer, tinytest, snpStats
 VignetteBuilder: knitr
 LinkingTo: Rcpp, RcppArmadillo
 URL: https://biometris.github.io/statgenGWAS/index.html,
         https://github.com/Biometris/statgenGWAS/
 BugReports: https://github.com/Biometris/statgenGWAS/issues
 NeedsCompilation: yes
-Packaged: 2022-02-16 14:43:10 UTC; rossu027
+Packaged: 2022-10-13 14:49:17 UTC; rossu027
 Author: Bart-Jan van Rossum [aut, cre]
     (<https://orcid.org/0000-0002-8673-2514>),
   Willem Kruijer [aut] (<https://orcid.org/0000-0001-7179-1733>),
   Fred van Eeuwijk [ctb] (<https://orcid.org/0000-0003-3672-2921>),
-  Martin Boer [ctb],
+  Martin Boer [ctb] (<https://orcid.org/0000-0002-1879-4588>),
   Marcos Malosetti [ctb] (<https://orcid.org/0000-0002-8150-1397>),
   Daniela Bustos-Korts [ctb] (<https://orcid.org/0000-0003-3827-6726>),
   Emilie Millet [ctb] (<https://orcid.org/0000-0002-2913-4892>),
@@ -80,4 +82,4 @@ Author: Bart-Jan van Rossum [aut, cre]
   Choazhi Zheng [ctb] (<https://orcid.org/0000-0001-6030-3933>)
 Maintainer: Bart-Jan van Rossum <bart-jan.vanrossum@wur.nl>
 Repository: CRAN
-Date/Publication: 2022-02-16 15:20:02 UTC
+Date/Publication: 2022-10-13 15:30:43 UTC

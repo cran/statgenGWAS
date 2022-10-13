@@ -1,5 +1,12 @@
+# statgenGWAS 1.0.9
+
+* The kinship function now has an argument MAF allowing for excluding SNPs with a low minor allele frequency from the calculations.
+* Small change in tests to accomodate future ggplot2 release.
+
 # statgenGWAS 1.0.8
 
+* A function readPlink is added that reads file in PLINK format and converts them directly to a gData object.
+* The kinship function now has an option MAF allowing for excluding markers with a MAF below a specified threshold.
 * The gData object now has a plot function allowing plotting of the genetic map.
 * A bug in gData summaries when only one trait is present in the phenotypic data is fixed.
 * A bug in runSingleTraitGwas is fixed now allowing for using traits that are in pheno as covariates in covar.
