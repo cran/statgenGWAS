@@ -156,16 +156,13 @@ qtlPlot <- function(dat,
   ## Create theme for plot
   qtlPlotTheme <- 
     ggplot2::theme(plot.background = ggplot2::element_blank(),
-                   panel.grid.major.x = 
-                     ggplot2::element_line(color = ifelse(printVertGrid,
-                                                          "white", "gray")),
+                   panel.grid.major.x = ggplot2::element_blank(),
                    panel.grid.major.y = ggplot2::element_line(color = "white"),
                    panel.grid.minor = ggplot2::element_blank(),
                    plot.title = ggplot2::element_text(hjust = 0.5),
                    axis.ticks = ggplot2::element_blank(),
                    panel.border = ggplot2::element_blank(),
                    axis.line = ggplot2::element_blank(),
-                   legend.position = "none",
                    panel.background = ggplot2::element_rect(fill = "gray"),
                    axis.text.x = ggplot2::element_blank(),
                    axis.text.y = ggplot2::element_text(size = 13, color = "black"),
@@ -174,15 +171,20 @@ qtlPlot <- function(dat,
                    strip.text = ggplot2::element_text(),
                    strip.text.x = ggplot2::element_text(size = 14),
                    strip.text.y = ggplot2::element_text(size = 0))
+  if (printVertGrid) {
+    qtlPlotTheme <- qtlPlotTheme + 
+      ggplot2::theme(panel.grid.major.x = ggplot2::element_line(color = "white"))
+  }
   ## Create the plot object
   ## Y data is sorted in reverse order because of the way ggplot plots.
   ## Point size proportional to allelic effect.
   ## Point color depends on the effect direction.
   p <- ggplot2::ggplot(data = plotDat,
-                       ggplot2::aes_string(x = "pos", 
-                                           y = "reorder(trait, -sort)", 
-                                           size = "abs(eff)",
-                                           color = "factor(color)")) +
+                       ggplot2::aes(x = .data[["pos"]], 
+                                    y = reorder(.data[["trait"]], 
+                                                -.data[["sort"]]),
+                                    size = abs(.data[["eff"]]),
+                                    color = factor(.data[["color"]]))) +
     # add vertical lines at the bin positions
     ggplot2::geom_vline(ggplot2::aes_(xintercept = ~pos), data = binPositions,
                         linetype = 1, color = "white") +
@@ -195,31 +197,34 @@ qtlPlot <- function(dat,
     ggplot2::facet_grid(". ~ chr", scales = "free", space = "free", 
                         switch = "both") +
     ## Ascribe a color to the allelic direction (column 'color').
-    ggplot2::scale_color_manual(labels = c("neg", "pos"), 
-                                values = c("darkblue", "green4")) +
+    ggplot2::scale_color_manual(name = "allelic effect",
+                                labels = c("negative", "positive"), 
+                                values = c("darkblue", "green4"),
+                                na.translate = FALSE) +
+    ggplot2::guides(size = "none") +
     ## Turn off clipping so points are plotted outside plot area.
     ggplot2::coord_cartesian(clip = "off") +
-    ## use custom made theme
+    ## use custom made theme.
     qtlPlotTheme +
     ggplot2::labs(title = title, x = "Chromosomes", y = yLab)  
   if (exportPptx) {
-    ## Save figure in .pptx
+    ## Save figure in .pptx.
     if (requireNamespace("officer", quietly = TRUE)) {
-      ## Create empty .pptx file
+      ## Create empty .pptx file.
       pptOut <- officer::read_pptx()
-      ## Add new slide (always necessary)
+      ## Add new slide (always necessary).
       pptOut <- officer::add_slide(x = pptOut, layout = "Title and Content",
                                    master = "Office Theme")
-      ## Add plot to the document
+      ## Add plot to the document.
       pptOut <- officer::ph_with(x = pptOut, value  = p, 
                                  location = officer::ph_location(left = 0.9,
                                                                  top = 1,
                                                                  width = 8,
                                                                  height = 6.4))      
-      ## Add date to slide
+      ## Add date to slide.
       pptOut <- officer::ph_with(x = pptOut, value = format(Sys.Date()), 
                                  location = officer::ph_location_type(type = "dt"))
-      ##Write .pptx
+      ## Write .pptx.
       print(pptOut, target = pptxName)
     } else {
       message(paste("Package officer needs to be installed to be able",

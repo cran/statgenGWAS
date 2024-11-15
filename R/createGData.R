@@ -158,9 +158,15 @@ createGData <- function(gData = NULL,
       stop("pheno should be a data.frame or a list of data.frames.\n")
     }
     if (is.data.frame(pheno)) {
+      ## Convert pheno to data.frame. This needs to be done to be able to handle
+      ## tibbles and possibly other data structures in the future.
+      phenoDf <- as.data.frame(pheno)
       ## If not a list already put data.frame/matrix in a list.
-      pheno <- setNames(list(pheno), deparse(substitute(pheno)))
+      pheno <- setNames(list(phenoDf), deparse(substitute(pheno)))
     } else {
+      ## Convert pheno to data.frame. This needs to be done to be able to handle
+      ## tibbles and possibly other data structures in the future.
+      pheno <- lapply(X = pheno, FUN = as.data.frame)
       if (is.null(names(pheno))) {
         ## Pheno is unnamed list.
         ## Add default names for ease of use in functions.
@@ -486,7 +492,8 @@ summary.gData <- function(object,
 #' @param x An object of class \code{summary.gData}.
 #' @param ... Not used.
 #'
-#' @noRd
+#' @importFrom utils capture.output
+#' @noRd 
 #' @export
 print.summary.gData <- function(x, 
                                 ...) {
@@ -500,8 +507,10 @@ print.summary.gData <- function(x,
     cat("\tNumber of markers:", x$markerSum$nMarkers, "\n")
     cat("\tNumber of genotypes:", x$markerSum$nGeno, "\n")
     cat("\tContent:\n")
-    cat("\t", names(x$markerSum$markerContent), "\n")
-    cat("\t", x$markerSum$markerContent, "\n\n")
+    ## A small workaround to get a nicer alignment of the headers.
+    markerContPrint <- capture.output(print(x$markerSum$markerContent))
+    cat("\t", markerContPrint[2], "\n")
+    cat("\t", markerContPrint[3], "\n\n")
   }
   if (!is.null(x$phenoSum)) {
     cat("pheno\n")

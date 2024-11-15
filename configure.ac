@@ -5,7 +5,7 @@ AC_PREREQ(2.61)
 
 ## Process this file with autoconf to produce a configure script.
 ## AC_INIT(statgenGWAS, m4_esyscmd_s([awk '/^Version:/ {print $2}' DESCRIPTION]))
-AC_INIT(statgenGWAS, 1.0.7.1)
+AC_INIT(statgenGWAS, 1.0.10)
 
 ## Set R_HOME, respecting an environment variable if one is set
 : ${R_HOME=$(R RHOME)}
@@ -53,3 +53,4 @@ AC_SUBST([OPENMP_CFLAG], ["${openmp_cflag}"])
 AC_SUBST([OPENMP_FLAG], ["${openmp_flag}"])
 AC_CONFIG_FILES([src/Makevars])
 AC_OUTPUT
+

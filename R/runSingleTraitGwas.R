@@ -116,7 +116,7 @@
 #' the parallel part of the algorithm. If \code{NULL} the number of cores used
 #' will be equal to the number of cores available on the machine - 1.
 #'
-#' @return An object of class \code{\link{GWAS}}.
+#' @return An object of class \code{GWAS}.
 #'
 #' @references Astle, William, and David J. Balding. 2009. Population Structure
 #' and Cryptic Relatedness in Genetic Association Studies. Statistical Science 
@@ -342,7 +342,7 @@ runSingleTraitGwas <- function(gData,
       varCompTr[[trait]] <- vc$varComp
       vcovMatrix <- vc$vcovMatrix
       ## Define single column matrix with trait non missing values.
-      y <- phTrTr[which(phTrTr$genotype %in% nonMiss), trait]
+      y <- phTrTr[which(phTrTr$genotype %in% nonMiss), trait, drop = TRUE]
       ## Set up a data.table for storing results containing map info and
       ## allele frequencies.
       GWAResult <- data.table::data.table(trait = trait, snp = rownames(mapRed),
