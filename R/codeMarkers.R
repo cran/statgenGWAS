@@ -55,7 +55,7 @@
 #' @param naStrings A character vector of strings to be treated as NA.
 #' @param verbose Should a summary of the performed steps be printed?
 #'
-#' @return A copy of the input \code{gData} object with markers replaced by
+#' @returns A copy of the input \code{gData} object with markers replaced by
 #' coded and imputed markers.
 #'
 #' @references S R Browning and B L Browning (2007) Rapid and accurate haplotype
@@ -272,12 +272,13 @@ codeMarkers <- function(gData,
     } else if (imputeType == "random") {
       ## Replace missing values by random value based on probabilities per SNP.
       snpNA <- apply(X = markersRecoded, MARGIN = 2, FUN = anyNA)
-      hom <- maxAll == 2 && any(markersRecoded == 1, na.rm = TRUE)
+      het <- maxAll != 2 || 
+        (maxAll == 2 && any(markersRecoded == 1, na.rm = TRUE))
       markersRecoded[, snpNA] <-
         apply(X = markersRecoded[, snpNA, drop = FALSE], MARGIN = 2, 
               FUN = function(x) {
                 p <- mean(x, na.rm = TRUE) / maxAll
-                if (hom) {
+                if (het) {
                   ## At least one heterozygous marker. Imputation may add more.
                   x[is.na(x)] <- sample(x = 0:maxAll, size = sum(is.na(x)),
                                         replace = TRUE,
