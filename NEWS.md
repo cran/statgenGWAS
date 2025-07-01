@@ -1,3 +1,10 @@
+# statgenGWAS 1.0.12
+
+* A function readVcf is added that reads a file in VCF format and converts it directly to a gData object.
+* New option "Hend" in remlAlgo for estimating variance components using the Henderson-based average information algorithm using the `LMMsolver` package.
+* Anticipating deprecation of `mmer` in sommer, calls to sommer now use `mmes` instead of `mmer`.
+* Tests are modified for compatibility with the upcoming version of ggplot2.
+
 # statgenGWAS 1.0.11
  
 * Random imputation is now done properly for marker matrices with values larger than 2.
@@ -16,7 +23,7 @@
 
 # statgenGWAS 1.0.8
 
-* A function readPLINK is added that reads file in PLINK format and converts them directly to a gData object.
+* A function readPLINK is added that reads files in PLINK format and converts them directly to a gData object.
 * The kinship function now has an option MAF allowing for excluding markers with a MAF below a specified threshold.
 * The gData object now has a plot function allowing plotting of the genetic map.
 * A bug in gData summaries when only one trait is present in the phenotypic data is fixed.

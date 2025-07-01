@@ -1,8 +1,8 @@
 Package: statgenGWAS
 Type: Package
 Title: Genome Wide Association Studies
-Version: 1.0.11
-Date: 2025-03-31
+Version: 1.0.12
+Date: 2025-06-30
 Authors@R: c(person(given = "Bart-Jan", 
                     family = "van Rossum", 
                     email = "bart-jan.vanrossum@wur.nl", 
@@ -58,28 +58,29 @@ Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.3.2
 Depends: R (>= 3.6)
-Imports: data.table, ggplot2 (>= 3.0.0), methods, rlang, Rcpp, sommer
-        (>= 3.7.3)
-Suggests: knitr, rmarkdown, officer, tinytest, snpStats
+Imports: data.table, ggplot2 (>= 3.0.0), LMMsolver, methods, rlang,
+        Rcpp, sommer (>= 4.4.1)
+Suggests: knitr, rmarkdown, officer, tinytest, snpStats, vcfR
 VignetteBuilder: knitr
 LinkingTo: Rcpp, RcppArmadillo
 URL: https://biometris.github.io/statgenGWAS/index.html,
         https://github.com/Biometris/statgenGWAS/
 BugReports: https://github.com/Biometris/statgenGWAS/issues
 NeedsCompilation: yes
-Packaged: 2025-03-31 12:52:05 UTC; rossu027
-Author: Bart-Jan van Rossum [aut, cre]
-    (<https://orcid.org/0000-0002-8673-2514>),
-  Willem Kruijer [aut] (<https://orcid.org/0000-0001-7179-1733>),
-  Fred van Eeuwijk [ctb] (<https://orcid.org/0000-0003-3672-2921>),
-  Martin Boer [ctb] (<https://orcid.org/0000-0002-1879-4588>),
-  Marcos Malosetti [ctb] (<https://orcid.org/0000-0002-8150-1397>),
-  Daniela Bustos-Korts [ctb] (<https://orcid.org/0000-0003-3827-6726>),
-  Emilie Millet [ctb] (<https://orcid.org/0000-0002-2913-4892>),
-  Joao Paulo [ctb] (<https://orcid.org/0000-0002-4180-0763>),
-  Maikel Verouden [ctb] (<https://orcid.org/0000-0002-4893-3323>),
-  Ron Wehrens [ctb] (<https://orcid.org/0000-0002-8798-5599>),
-  Choazhi Zheng [ctb] (<https://orcid.org/0000-0001-6030-3933>)
+Packaged: 2025-07-01 06:12:04 UTC; rossu027
+Author: Bart-Jan van Rossum [aut, cre] (ORCID:
+    <https://orcid.org/0000-0002-8673-2514>),
+  Willem Kruijer [aut] (ORCID: <https://orcid.org/0000-0001-7179-1733>),
+  Fred van Eeuwijk [ctb] (ORCID: <https://orcid.org/0000-0003-3672-2921>),
+  Martin Boer [ctb] (ORCID: <https://orcid.org/0000-0002-1879-4588>),
+  Marcos Malosetti [ctb] (ORCID: <https://orcid.org/0000-0002-8150-1397>),
+  Daniela Bustos-Korts [ctb] (ORCID:
+    <https://orcid.org/0000-0003-3827-6726>),
+  Emilie Millet [ctb] (ORCID: <https://orcid.org/0000-0002-2913-4892>),
+  Joao Paulo [ctb] (ORCID: <https://orcid.org/0000-0002-4180-0763>),
+  Maikel Verouden [ctb] (ORCID: <https://orcid.org/0000-0002-4893-3323>),
+  Ron Wehrens [ctb] (ORCID: <https://orcid.org/0000-0002-8798-5599>),
+  Choazhi Zheng [ctb] (ORCID: <https://orcid.org/0000-0001-6030-3933>)
 Maintainer: Bart-Jan van Rossum <bart-jan.vanrossum@wur.nl>
 Repository: CRAN
-Date/Publication: 2025-03-31 13:30:06 UTC
+Date/Publication: 2025-07-01 06:50:03 UTC
