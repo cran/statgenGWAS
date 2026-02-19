@@ -1,8 +1,8 @@
-b73f722aaa21fb4c0020e114c8946110 *DESCRIPTION
+87e651a06ad295c0bc0530d9e5edcf91 *DESCRIPTION
 4c1d2221ce775db26b977114846582f4 *NAMESPACE
-f0076e505635c4b2daba89b6fffdcef5 *NEWS.md
+53091be2ac8221554a266ff9e967f96b *NEWS.md
 6de01920a6f4209f1bd5cbeb72aa77eb *R/EMMA.R
-bba65aa09d1c7eedaed80ab3115a9986 *R/GWASHelp.R
+bfb12ae96e62306f751e43503970b02d *R/GWASHelp.R
 3bde1db0406eb688f81873d64aa8c196 *R/RcppExports.R
 d6ecb628ce4e023c27fe9dcf08b00ef5 *R/chkFuncs.R
 99669221c4871cd1a38bfcd666aa6077 *R/codeMarkers.R
@@ -17,13 +17,13 @@ acc0d7143bbc6a87a4bc81cc757ff115 *R/kinship.R
 0a60d5f013d1f1510009742df40fdfc7 *R/qtlPlot.R
 fe28f9e1a04b378e892c1184fbcec78b *R/readPlink.R
 d9c8fd17ae841d39c7f170bb8707841e *R/readVcf.R
-f596a371f6b90f97af13422b7d9f284f *R/runSingleTraitGwas.R
+74b4a2cfef413dcb5d58e18d0cd40922 *R/runSingleTraitGwas.R
 e526433ac44841877679a590bb6fc255 *R/statgenGWAS.R
 ba0b6ffaa3ddb73bc429556eaaed9acd *R/utils.R
 5692e3a4c30c1979ae6cbde404a84b42 *R/zzz.R
 d51a8aa140e60c55a0d47b420206e044 *README.md
-9d40159f50a5fc9949cbfe95a2884126 *build/partial.rdb
-3024b724e2ec80a24ff2a64719c99af5 *build/vignette.rds
+d54042561b90aafd8a9a202ea63e1e4b *build/partial.rdb
+7c945e82638a34cbe3a08707bc5c2a0c *build/vignette.rds
 6eeeb1e94b312355adcab7f36696cc0f *cleanup
 61d9b1d1c66c95e872111d0700fb415b *configure
 4e05f0ef4e05376b002e3c03a72dafa2 *configure.ac
@@ -32,7 +32,7 @@ c87fdc93e6aa814fdcd7b2443313917b *data/dropsMap.rda
 33efea5d9a898044b07d58152c3d2625 *data/dropsPheno.rda
 abd2b955f70303ec30c8b44c3f932e6c *inst/doc/GWAS.R
 4e819c6d36fbf25efd11d64dd44602df *inst/doc/GWAS.Rmd
-521f2c7ce560efbc53e4cbc5f2a9b45a *inst/doc/GWAS.html
+4ad83b7b48ae709588d8478a4818827b *inst/doc/GWAS.html
 9eb5f003b27c7cd79f717bd30b7db5ea *inst/extdata/testData.RData
 ea98b902fe469c5a6b6e1a28fb08e3d6 *inst/java/beagle.jar
 e733664b8b1b4009f7843cad82ed5e34 *inst/tinytest/result1_GWARes_ph1
